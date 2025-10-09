@@ -1,7 +1,6 @@
 # Studdy System
 
-**Studdy** is a web-based peer-to-peer tutoring platform that connects students who need academic help with those who can provide it.  
-The system allows students (tutees) to book study sessions with peer tutors based on subjects, availability, and expertise.
+**Studdy** is a web-based peer-to-peer tutoring platform that connects students who need academic help with those who can provide it. The system allows students (tutees) to book study sessions with peer tutors based on subjects, availability, and expertise.
 
 ---
 
