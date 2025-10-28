@@ -29,6 +29,12 @@ public class UserEntity {
     private int hoursTutored;
     private float averageRating;
 
+    private String password;
+
+    // Add user role field
+    private String role = "STUDENT"; // Default role
+
+
     // Relationships
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<TutorSubjectEntity> tutorSubjects = new ArrayList<>();
@@ -49,13 +55,18 @@ public class UserEntity {
         super();
     }
 
-    public UserEntity(String firstName, char middleInitial, String lastName, String email, String phoneNumber, String address, String bio, String school, int gradeLevel, String major, String learningGoals, int sessionsCompleted, int hoursStudied, int hoursTutored, float averageRating) {
+    public UserEntity(String firstName, char middleInitial, String lastName, 
+                     String email, String phoneNumber, String password,
+                     String address, String bio, String school, int gradeLevel, 
+                     String major, String learningGoals, int sessionsCompleted, 
+                     int hoursStudied, int hoursTutored, float averageRating) {
         super();
         this.firstName = firstName;
         this.middleInitial = middleInitial;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.password = password; 
 
         this.address = address;
         this.bio = bio;
@@ -104,6 +115,12 @@ public class UserEntity {
     public void setHoursStudied(int hoursStudied) { this.hoursStudied = hoursStudied; }
     public void setHoursTutored(int hoursTutored) { this.hoursTutored = hoursTutored; }
     public void setAverageRating(float averageRating) { this.averageRating = averageRating; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
     // Getters and Setters for relationship fields
     public List<TutorSubjectEntity> getTutorSubjects() { return tutorSubjects; }
