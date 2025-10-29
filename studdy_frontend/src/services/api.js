@@ -1,104 +1,68 @@
 import axios from 'axios';
-import { API_BASE_URL } from '../utils/constants';
 
-// Create axios instance with default configs
+// Use proxy in development, direct URL in production
+const API_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? '/api'  // This will be proxied to http://localhost:8080/api
+  : 'http://localhost:8080/api';
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
 });
 
-// Request interceptor to add headers
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    console.log('Making API request to:', config.baseURL + config.url);
-    console.log('Full URL would be:', 'http://localhost:8080' + config.url);
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
-    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor to handle errors
+// Response interceptor
 api.interceptors.response.use(
-  (response) => {
-    console.log('API Response received:', response.status);
-    return response;
-  },
+  (response) => response,
   (error) => {
-    console.error('API Error Details:');
-    console.error('Error message:', error.message);
-    console.error('Error code:', error.code);
-    
-    if (error.response) {
-      // Server responded with error status
-      console.error('Error status:', error.response.status);
-      console.error('Error data:', error.response.data);
-      console.error('Error headers:', error.response.headers);
-    } else if (error.request) {
-      // Request was made but no response received
-      console.error('No response received. Request details:', error.request);
-      console.error('Is backend running on http://localhost:8080?');
-    } else {
-      // Something else happened
-      console.error('Error config:', error.config);
+    if (error.response?.status === 401) {
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
     }
-    
     return Promise.reject(error);
   }
 );
+
+export const authAPI = {
+  login: async (credentials) => {
+    const response = await api.post('/api/auth/login', credentials);
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+    }
+    return response.data;
+  },
+
+  register: async (userData) => {
+    const response = await api.post('/api/auth/register', userData);
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+    }
+    return response.data;
+  },
+
+  logout: () => {
+    localStorage.removeItem('authToken');
+  }
+};
 
 export const userAPI = {
-  // Register a new user
-  register: async (userData) => {
-    try {
-      console.log('Sending user data to /api/postNewUser:', userData);
-      const response = await api.post('/api/postNewUser', userData);
-      console.log('Registration successful response:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Registration API error details:', error);
-      const errorMessage = error.response?.data || error.message || 'Registration failed';
-      throw errorMessage;
-    }
-  },
-
-  // Get all users (for login validation)
-  getAllUsers: async () => {
-    try {
-      const response = await api.get('/api/getAllUsers');
-      return response.data;
-    } catch (error) {
-      console.error('Get users API error:', error);
-      throw error.response?.data || error.message;
-    }
-  },
-
-  // Update user
-  updateUser: async (userId, userData) => {
-    try {
-      const response = await api.put(`/api/updateUser?userId=${userId}`, userData);
-      return response.data;
-    } catch (error) {
-      console.error('Update user API error:', error);
-      throw error.response?.data || error.message;
-    }
-  },
-
-  // Delete user
-  deleteUser: async (userId) => {
-    try {
-      const response = await api.delete(`/api/deleteUser/${userId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Delete user API error:', error);
-      throw error.response?.data || error.message;
-    }
-  }
+  getProfile: () => api.get('/api/user/profile'),
+  updateProfile: (userData) => api.put('/api/user/profile', userData),
 };
 
 export default api;

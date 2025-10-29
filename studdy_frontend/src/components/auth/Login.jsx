@@ -1,76 +1,44 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Mail, Lock, BookOpen } from 'lucide-react';
 import AuthLayout from '../layout/AuthLayout';
 import InputField from '../common/InputField';
 import Button from '../common/Button';
-import { userAPI } from '../../services/api';
+import { authAPI } from '../../services/api';
 
-const Login = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+const LoginPage = ({ onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
     email: '',
-    phoneNumber: ''
+    password: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Get success message from registration redirect
-  const successMessage = location.state?.message;
-
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: '' });
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
-
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.password) newErrors.password = 'Password is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
 
     setIsLoading(true);
-
     try {
-      // Get all users to find matching credentials
-      const users = await userAPI.getAllUsers();
-      
-      // Find user with matching email and phone number
-      const user = users.find(u => 
-        u.email === formData.email && u.phoneNumber === formData.phoneNumber
-      );
-
-      if (user) {
-        // Store user data in localStorage (in a real app, you'd use proper auth tokens)
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        console.log('Login successful:', user);
-        
-        // Redirect to dashboard
-        navigate('/dashboard');
-      } else {
-        setErrors({ submit: 'Invalid email or phone number' });
-      }
+      const response = await authAPI.login(formData);
+      console.log('Login successful:', response);
+      // Handle successful login (redirect, store token, etc.)
     } catch (error) {
-      console.error('Login error:', error);
-      setErrors({ submit: 'Login failed. Please try again.' });
+      setErrors({ submit: error.message || 'Login failed' });
     } finally {
       setIsLoading(false);
     }
@@ -78,71 +46,75 @@ const Login = () => {
 
   return (
     <AuthLayout 
-      title="Welcome Back" 
-      subtitle="Sign in to continue your learning journey"
+      title="Welcome to Studdy" 
+      subtitle="Learn together, grow together"
+      icon={BookOpen}
     >
-      {successMessage && (
-        <div style={{
-          backgroundColor: '#D1FAE5',
-          color: '#065F46',
-          padding: '12px',
-          borderRadius: '8px',
-          marginBottom: '1rem',
-          textAlign: 'center',
-          fontSize: '14px'
-        }}>
-          {successMessage}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="auth-form">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <InputField
-          label="Email"
+          icon={Mail}
+          label="Email Address"
           type="email"
           name="email"
+          placeholder="your.email@example.com"
           value={formData.email}
           onChange={handleChange}
-          placeholder="Enter your email"
           error={errors.email}
           required
         />
 
         <InputField
-          label="Phone Number"
-          name="phoneNumber"
-          value={formData.phoneNumber}
+          icon={Lock}
+          label="Password"
+          type="password"
+          name="password"
+          placeholder="Enter your password"
+          value={formData.password}
           onChange={handleChange}
-          placeholder="Enter your phone number"
-          error={errors.phoneNumber}
+          error={errors.password}
           required
         />
 
+        <div className="flex items-center justify-between">
+          <label className="flex items-center">
+            <input type="checkbox" className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500" />
+            <span className="ml-2 text-sm text-gray-600">Remember me</span>
+          </label>
+          <a href="#" className="text-sm text-green-600 hover:text-green-700 font-medium">
+            Forgot password?
+          </a>
+        </div>
+
         {errors.submit && (
-          <div className="error-message" style={{ textAlign: 'center' }}>
-            {errors.submit}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <p className="text-sm text-red-800">{errors.submit}</p>
           </div>
         )}
 
-        <div className="form-actions">
-          <Button 
-            type="submit" 
-            variant="primary" 
-            fullWidth 
-            disabled={isLoading}
-          >
-            {isLoading ? 'Signing In...' : 'Sign In'}
-          </Button>
-        </div>
-
-        <div className="auth-switch">
-          Don't have an account?{' '}
-          <Link to="/register" className="auth-link">
-            Create one here
-          </Link>
-        </div>
+        <Button type="submit" variant="primary" fullWidth={true} disabled={isLoading}>
+          {isLoading ? 'Signing In...' : 'Sign In'}
+        </Button>
       </form>
+
+      <div className="my-6 flex items-center">
+        <div className="flex-1 border-t border-gray-300"></div>
+        <span className="px-4 text-sm text-gray-500">or</span>
+        <div className="flex-1 border-t border-gray-300"></div>
+      </div>
+
+      <div className="text-center">
+        <p className="text-gray-600">
+          Don't have an account?{' '}
+          <button
+            onClick={onSwitchToRegister}
+            className="text-green-600 hover:text-green-700 font-semibold"
+          >
+            Create Account
+          </button>
+        </p>
+      </div>
     </AuthLayout>
   );
 };
 
-export default Login;
+export default LoginPage;

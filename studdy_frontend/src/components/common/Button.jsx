@@ -3,29 +3,25 @@ import React from 'react';
 const Button = ({ 
   children, 
   variant = 'primary', 
-  type = 'button', 
-  disabled = false, 
   onClick, 
-  className = '',
-  fullWidth = false,
-  ...props 
+  disabled, 
+  fullWidth,
+  type = 'button',
+  className = ''
 }) => {
-  const baseClasses = 'btn';
-  const variantClasses = {
+  const baseStyles = 'btn';
+  const variants = {
     primary: 'btn-primary',
-    secondary: 'btn-secondary'
+    secondary: 'btn-secondary',
+    outline: 'btn-outline'
   };
-  const widthClass = fullWidth ? 'btn-full' : '';
   
-  const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${widthClass} ${className}`.trim();
-
   return (
     <button
       type={type}
-      className={combinedClasses}
-      disabled={disabled}
       onClick={onClick}
-      {...props}
+      disabled={disabled}
+      className={`${baseStyles} ${variants[variant]} ${fullWidth ? 'w-full' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
     >
       {children}
     </button>

@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Your custom styles here */
+@layer components {
+  .btn {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2;
+  }
+  
+  .btn-primary {
+    @apply bg-green-600 text-white hover:bg-green-700 active:bg-green-800;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 active:bg-gray-400;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-green-600 text-green-600 hover:bg-green-50;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors;
+  }
+  
+  .input-with-icon {
+    @apply pl-11 pr-4;
+  }
+  
+  .auth-container {
+    @apply min-h-screen bg-gradient-to-br from-green-100 via-emerald-50 to-teal-100 flex items-center justify-center p-4;
+  }
+  
+  .auth-card {
+    @apply bg-white rounded-2xl shadow-2xl w-full max-w-md p-8;
+  }
+  
+  .auth-card-large {
+    @apply bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8;
+  }
+  
+  .auth-header {
+    @apply text-center mb-8;
+  }
+  
+  .auth-icon {
+    @apply inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-full mb-4;
+  }
+  
+  .auth-title {
+    @apply text-3xl font-bold text-gray-800 mb-2;
+  }
+  
+  .auth-subtitle {
+    @apply text-gray-600;
+  }
+  
+  .form-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-5;
+  }
+  
+  .step-indicator {
+    @apply flex items-center justify-center mb-8;
+  }
+  
+  .step-circle {
+    @apply flex items-center justify-center w-10 h-10 rounded-full font-semibold;
+  }
+  
+  .step-active {
+    @apply bg-green-600 text-white;
+  }
+  
+  .step-inactive {
+    @apply bg-gray-200 text-gray-500;
+  }
+  
+  .step-connector {
+    @apply w-16 h-1;
+  }
+  
+  .step-connector-active {
+    @apply bg-green-600;
+  }
+  
+  .step-connector-inactive {
+    @apply bg-gray-200;
+  }
+}

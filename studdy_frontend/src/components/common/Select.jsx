@@ -1,10 +1,9 @@
 import React from 'react';
 
-const InputField = ({ 
+const Select = ({ 
   icon: Icon, 
   label, 
-  type = 'text', 
-  placeholder, 
+  options, 
   name, 
   value, 
   onChange,
@@ -25,18 +24,21 @@ const InputField = ({
             <Icon size={20} />
           </div>
         )}
-        <input
-          type={type}
+        <select
           name={name}
           value={value}
           onChange={onChange}
-          placeholder={placeholder}
-          className={`input-field ${Icon ? 'input-with-icon' : ''} ${error ? 'border-red-500' : ''}`}
-        />
+          className={`input-field ${Icon ? 'input-with-icon' : ''} appearance-none bg-white ${error ? 'border-red-500' : ''}`}
+        >
+          <option value="">Select...</option>
+          {options.map((option, index) => (
+            <option key={index} value={option.value}>{option.label}</option>
+          ))}
+        </select>
       </div>
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 };
 
-export default InputField;
+export default Select;

@@ -1,17 +1,25 @@
 import React from 'react';
-import Card from '../common/Card';
+import { BookOpen, GraduationCap } from 'lucide-react';
 
-const AuthLayout = ({ title, subtitle, children }) => {
+const AuthLayout = ({ 
+  children, 
+  title, 
+  subtitle, 
+  icon: Icon = BookOpen,
+  size = 'md'
+}) => {
   return (
     <div className="auth-container">
-      <Card className="auth-card">
+      <div className={size === 'lg' ? 'auth-card-large' : 'auth-card'}>
         <div className="auth-header">
-          <h1 className="auth-title">Studdy</h1>
+          <div className="auth-icon">
+            <Icon className="text-white" size={32} />
+          </div>
+          <h1 className="auth-title">{title}</h1>
           {subtitle && <p className="auth-subtitle">{subtitle}</p>}
-          {title && <h2 style={{ marginTop: '1rem', color: '#1E293B' }}>{title}</h2>}
         </div>
         {children}
-      </Card>
+      </div>
     </div>
   );
 };
