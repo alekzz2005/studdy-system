@@ -1,6 +1,6 @@
 # Studdy System
 
-**Studdy** is a web-based peer-to-peer tutoring platform that connects students who need academic help with those who can provide it. The system allows students (tutees) to book study sessions with peer tutors based on subjects, availability, and expertise.
+**Studdy** is a peer-to-peer tutoring management platform built to help students connect, learn, and collaborate. It bridges the gap between tutors and tutees by providing a centralized system for managing subjects, sessions, and academic progress.
 
 ---
 
@@ -31,11 +31,12 @@
 | Database | MySQL |
 
 ### Main Entities
-- **User** (Tutor/Tutee info)
-- **Session** (Tracks tutoring sessions)
-- **Subject** (Defines academic topics)
-- **Tutor_Subject** and **Tutee_Subject**
-- **Progress** (Tracks topics and progress)
+- **User** – Stores tutor and tutee information
+- **Subject** – Defines academic subjects or courses
+- **Session** – Records tutoring session details (tutor, tutee, schedule, feedback)
+- **Tutor_Subject** – Links tutors to the subjects they teach
+- **Tutee_Subject** – Links tutees to the subjects they are enrolled in
+- **Progress** – Tracks learning progress and session outcomes
 
 ### Developers
 - Atamosa, Charry Mae A.
