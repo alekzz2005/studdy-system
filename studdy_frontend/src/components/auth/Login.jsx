@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, BookOpen } from 'lucide-react';
 import AuthLayout from '../layout/AuthLayout';
 import InputField from '../common/InputField';
 import Button from '../common/Button';
 import { authAPI } from '../../services/api';
 
-const LoginPage = ({ onSwitchToRegister }) => {
+const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -37,11 +39,16 @@ const LoginPage = ({ onSwitchToRegister }) => {
       const response = await authAPI.login(formData);
       console.log('Login successful:', response);
       // Handle successful login (redirect, store token, etc.)
+      navigate('/'); // Redirect after successful login
     } catch (error) {
-      setErrors({ submit: error.message || 'Login failed' });
+      setErrors({ submit: error.response?.data?.message || error.message || 'Login failed' });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSwitchToRegister = () => {
+    navigate('/register');
   };
 
   return (
@@ -106,7 +113,7 @@ const LoginPage = ({ onSwitchToRegister }) => {
         <p className="text-gray-600">
           Don't have an account?{' '}
           <button
-            onClick={onSwitchToRegister}
+            onClick={handleSwitchToRegister}
             className="text-green-600 hover:text-green-700 font-semibold"
           >
             Create Account
