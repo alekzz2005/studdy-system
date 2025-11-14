@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
 import AuthLayout from '../layout/AuthLayout';
 import Button from '../common/Button';
@@ -7,7 +8,7 @@ import AcademicInfo from './RegisterSteps/AcademicInfo';
 import AboutYou from './RegisterSteps/AboutYou';
 import { authAPI } from '../../services/api';
 
-const RegisterPage = ({ onSwitchToLogin }) => {
+const RegisterPage = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
@@ -25,6 +26,7 @@ const RegisterPage = ({ onSwitchToLogin }) => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -66,8 +68,9 @@ const RegisterPage = ({ onSwitchToLogin }) => {
           const response = await authAPI.register(formData);
           console.log('Registration successful:', response);
           // Handle successful registration
+          navigate('/'); // Redirect after successful registration
         } catch (error) {
-          setErrors({ submit: error.message || 'Registration failed' });
+          setErrors({ submit: error.response?.data?.message || error.message || 'Registration failed' });
         } finally {
           setIsLoading(false);
         }
@@ -79,6 +82,10 @@ const RegisterPage = ({ onSwitchToLogin }) => {
     if (step > 1) {
       setStep(step - 1);
     }
+  };
+
+  const handleSwitchToLogin = () => {
+    navigate('/login');
   };
 
   const StepIndicator = () => (
@@ -120,7 +127,7 @@ const RegisterPage = ({ onSwitchToLogin }) => {
               Back
             </Button>
           ) : (
-            <Button variant="outline" onClick={onSwitchToLogin} fullWidth={true}>
+            <Button variant="outline" onClick={handleSwitchToLogin} fullWidth={true}>
               Back to Login
             </Button>
           )}
@@ -141,7 +148,7 @@ const RegisterPage = ({ onSwitchToLogin }) => {
           <p className="text-gray-600">
             Already have an account?{' '}
             <button
-              onClick={onSwitchToLogin}
+              onClick={handleSwitchToLogin}
               className="text-green-600 hover:text-green-700 font-semibold"
             >
               Sign In

@@ -65,4 +65,15 @@ export const userAPI = {
   updateProfile: (userData) => api.put('/api/user/profile', userData),
 };
 
+// Add this to your existing api.js file
+export const fetchLandingPageStats = async () => {
+  try {
+    const response = await api.get('/api/landing-stats');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching landing page stats:', error);
+    throw error;
+  }
+};
+
 export default api;

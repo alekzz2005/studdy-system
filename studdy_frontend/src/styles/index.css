@@ -37,7 +37,7 @@
   }
   
   .auth-card-large {
-    @apply bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8;
+    @apply bg-white rounded-2xl shadow-2xl w-full max-w-xl p-8;
   }
   
   .auth-header {
