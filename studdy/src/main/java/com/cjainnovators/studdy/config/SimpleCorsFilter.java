@@ -1,4 +1,4 @@
-package main.java.com.cjainnovators.studdy.config;
+package com.cjainnovators.studdy.config;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
