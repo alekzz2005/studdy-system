@@ -9,11 +9,23 @@ const BasicInfo = ({ formData, onChange, errors }) => {
       
       <InputField
         icon={User}
-        label="Full Name"
+        label="First Name"
         type="text"
-        name="name"
-        placeholder="John Doe"
-        value={formData.name}
+        name="firstName"
+        placeholder="John"
+        value={formData.firstName}
+        onChange={onChange}
+        error={errors.name}
+        required
+      />
+
+      <InputField
+        icon={User}
+        label="Last Name"
+        type="text"
+        name="lastName"
+        placeholder="Doe"
+        value={formData.lastName}
         onChange={onChange}
         error={errors.name}
         required
@@ -36,11 +48,11 @@ const BasicInfo = ({ formData, onChange, errors }) => {
           icon={Phone}
           label="Phone Number"
           type="tel"
-          name="phone_number"
+          name="phoneNumber"
           placeholder="+63 912 345 6789"
-          value={formData.phone_number}
+          value={formData.phoneNumber}
           onChange={onChange}
-          error={errors.phone_number}
+          error={errors.phoneNumber}
           required
         />
       </div>
@@ -49,10 +61,10 @@ const BasicInfo = ({ formData, onChange, errors }) => {
         icon={Calendar}
         label="Date of Birth"
         type="date"
-        name="date_of_birth"
-        value={formData.date_of_birth}
+        name="dateOfBirth"
+        value={formData.dateOfBirth}
         onChange={onChange}
-        error={errors.date_of_birth}
+        error={errors.dateOfBirth}
       />
 
       <div className="form-grid">

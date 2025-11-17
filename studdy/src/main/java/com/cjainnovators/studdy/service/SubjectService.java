@@ -13,10 +13,12 @@ public class SubjectService {
     @Autowired
     private SubjectRepository subjectRepository;
 
+    //POST
     public SubjectEntity createSubject(SubjectEntity subject) {
         return subjectRepository.save(subject);
     }
 
+    //GET
     public List<SubjectEntity> getAllSubjects() {
         return subjectRepository.findAll();
     }
@@ -25,7 +27,16 @@ public class SubjectService {
         return subjectRepository.findById(subjectId)
             .orElseThrow(() -> new NoSuchElementException("Subject with ID " + subjectId + " not found"));
     }
+    
+    public List<SubjectEntity> getSubjectsByMajor(String major) {
+        return subjectRepository.findByMajor(major);
+    }
 
+    public List<SubjectEntity> searchSubjectsByName(String name) {
+        return subjectRepository.findBySubjectNameContainingIgnoreCase(name);
+    }
+
+    //PUT
     public SubjectEntity updateSubject(int subjectId, SubjectEntity subject) {
         SubjectEntity existingSubject = getSubjectById(subjectId);
         existingSubject.setSubjectName(subject.getSubjectName());
@@ -34,19 +45,12 @@ public class SubjectService {
         return subjectRepository.save(existingSubject);
     }
 
+    //DELETE
     public String deleteSubject(int subjectId) {
         if (subjectRepository.existsById(subjectId)) {
             subjectRepository.deleteById(subjectId);
             return "Subject with ID " + subjectId + " deleted successfully";
         }
         return "Subject with ID " + subjectId + " not found";
-    }
-
-    public List<SubjectEntity> getSubjectsByMajor(String major) {
-        return subjectRepository.findByMajor(major);
-    }
-
-    public List<SubjectEntity> searchSubjectsByName(String name) {
-        return subjectRepository.findBySubjectNameContainingIgnoreCase(name);
     }
 }

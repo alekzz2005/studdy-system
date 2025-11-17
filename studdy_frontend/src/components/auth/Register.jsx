@@ -11,18 +11,19 @@ import { authAPI } from '../../services/api';
 const RegisterPage = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
-    phone_number: '',
-    date_of_birth: '',
+    phoneNumber: '',
+    dateOfBirth: '',
     school: '',
-    grade_level: '',
+    gradeLevel: 0,
     major: '',
     address: '',
     bio: '',
-    goals: ''
+    learningGoals: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -39,17 +40,34 @@ const RegisterPage = () => {
     const newErrors = {};
     
     if (currentStep === 1) {
-      if (!formData.name) newErrors.name = 'Full name is required';
+      if (!formData.firstName) newErrors.firstName = 'First name is required';
+      if (!formData.lastName) newErrors.lastName = 'Last name is required';
       if (!formData.email) newErrors.email = 'Email is required';
-      if (!formData.phone_number) newErrors.phone_number = 'Phone number is required';
+      if (!formData.phoneNumber) newErrors.phoneNumber = 'Phone number is required';
+      if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
       if (!formData.password) newErrors.password = 'Password is required';
       if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
       if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+
+      if (formData.dateOfBirth) {
+        const birthDate = new Date(formData.dateOfBirth);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        if (age < 13) {
+          newErrors.dateOfBirth = 'You must be at least 13 years old';
+        }
+      }
     }
     
     if (currentStep === 2) {
       if (!formData.school) newErrors.school = 'School is required';
-      if (!formData.grade_level) newErrors.grade_level = 'Grade level is required';
+      if (!formData.gradeLevel || formData.gradeLevel === 0) newErrors.gradeLevel = 'Grade level is required';
     }
 
     setErrors(newErrors);

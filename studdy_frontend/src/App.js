@@ -4,6 +4,20 @@ import LandingPage from './components/pages/LandingPage';
 import LoginPage from './components/auth/Login';
 import RegisterPage from './components/auth/Register';
 import './styles/index.css';
+import Dashboard from './components/pages/Dashboard';
+
+const isAuthenticated = () => {
+  const user = localStorage.getItem('user');
+  return !!user; 
+};
+
+const ProtectedRoute = ({ children }) => {
+  return isAuthenticated() ? children : <Navigate to="/login" />;
+};
+
+const PublicRoute = ({ children }) => {
+  return !isAuthenticated() ? children : <Navigate to="/dashboard" />;
+};
 
 function App() {
   return (
@@ -14,8 +28,10 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           
           {/* Auth routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<PublicRoute> <LoginPage /> </PublicRoute>} />
+          <Route path="/register" element={<PublicRoute> <RegisterPage /> </PublicRoute>} />
+
+          <Route path="/dashboard" element={<ProtectedRoute> <Dashboard/> </ProtectedRoute>} />
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" />} />
