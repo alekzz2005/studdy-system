@@ -15,13 +15,28 @@ public class UserService {
     private UserRepository userRepository;
 
     public UserService() {}
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+        public UserService(UserRepository userRepository) {
+            this.userRepository = userRepository;
+        }
 
     //Create / Post
-    public UserEntity postUser(UserEntity user) {
+    public UserEntity createUser(UserEntity user) {
         return userRepository.save(user);
+    }
+
+    public UserEntity authenticateUser(String email, String password) {
+        // If your repository returns UserEntity directly or null
+        UserEntity user = userRepository.findByEmail(email);
+        
+        if (user == null) {
+            throw new RuntimeException("User not found with email: " + email);
+        }
+        
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid password");
+        }
+        
+        return user;
     }
 
     //Read / Get
@@ -36,7 +51,6 @@ public class UserService {
         try {
             existingUser = userRepository.findById(userId).get();
             existingUser.setFirstName(user.getFirstName());
-            existingUser.setMiddleInitial(user.getMiddleInitial());
             existingUser.setLastName(user.getLastName());
             existingUser.setEmail(user.getEmail());
             existingUser.setPhoneNumber(user.getPhoneNumber());

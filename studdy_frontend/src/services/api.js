@@ -3,7 +3,7 @@ import axios from 'axios';
 // Use proxy in development, direct URL in production
 const API_BASE_URL = process.env.NODE_ENV === 'development' 
   ? '/api'  // This will be proxied to http://localhost:8080/api
-  : 'http://localhost:8080/api';
+  : 'http://localhost:8080';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -40,18 +40,12 @@ api.interceptors.response.use(
 
 export const authAPI = {
   login: async (credentials) => {
-    const response = await api.post('/api/auth/login', credentials);
-    if (response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
-    }
+    const response = await api.post('/user/api/loginUser', credentials);
     return response.data;
   },
 
   register: async (userData) => {
-    const response = await api.post('/api/auth/register', userData);
-    if (response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
-    }
+    const response = await api.post('/user/api/createUser', userData);
     return response.data;
   },
 

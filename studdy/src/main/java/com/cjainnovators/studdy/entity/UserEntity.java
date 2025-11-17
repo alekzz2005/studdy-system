@@ -1,6 +1,7 @@
 package com.cjainnovators.studdy.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +14,10 @@ public class UserEntity {
     private int userId; 
     
     private String firstName;
-    private char middleInitial;
     private String lastName;
     private String email;
     private String phoneNumber;
+    private LocalDate dateOfBirth;
     
     private String address;
     private String bio;
@@ -55,18 +56,18 @@ public class UserEntity {
         super();
     }
 
-    public UserEntity(String firstName, char middleInitial, String lastName, 
-                     String email, String phoneNumber, String password,
-                     String address, String bio, String school, int gradeLevel, 
-                     String major, String learningGoals, int sessionsCompleted, 
-                     int hoursStudied, int hoursTutored, float averageRating) {
+    public UserEntity(String firstName, String lastName,String email, 
+                    String phoneNumber, LocalDate dateOfBirth, String password,
+                    String address, String bio, String school, int gradeLevel,
+                    String major, String learningGoals, int sessionsCompleted, 
+                    int hoursStudied, int hoursTutored, float averageRating) {
         super();
         this.firstName = firstName;
-        this.middleInitial = middleInitial;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.password = password; 
+        this.password = password;
+        this.dateOfBirth = dateOfBirth;
 
         this.address = address;
         this.bio = bio;
@@ -83,10 +84,10 @@ public class UserEntity {
     // Setters and Getters for basic fields
     public int getUserId() { return userId; }
     public String getFirstName() { return firstName; }
-    public char getMiddleInitial() { return middleInitial; }
     public String getLastName() { return lastName; }
     public String getEmail() { return email; }
     public String getPhoneNumber() { return phoneNumber; }
+    public LocalDate getDateOfBirth() { return dateOfBirth; }
 
     public String getAddress() { return address; }
     public String getBio() { return bio; }
@@ -100,10 +101,10 @@ public class UserEntity {
     public float getAverageRating() { return averageRating; }
 
     public void setFirstName(String firstName) { this.firstName = firstName; }
-    public void setMiddleInitial(char middleInitial) { this.middleInitial = middleInitial; }
     public void setLastName(String lastName) { this.lastName = lastName; }
     public void setEmail(String email) { this.email = email; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
 
     public void setAddress(String address) { this.address = address; }
     public void setBio(String bio) { this.bio = bio; }

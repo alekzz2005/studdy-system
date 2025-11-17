@@ -6,17 +6,32 @@ import Textarea from '../../common/Textarea';
 
 const AcademicInfo = ({ formData, onChange, errors }) => {
   const gradeLevels = [
-    { value: '7', label: 'Grade 7' },
-    { value: '8', label: 'Grade 8' },
-    { value: '9', label: 'Grade 9' },
-    { value: '10', label: 'Grade 10' },
-    { value: '11', label: 'Grade 11' },
-    { value: '12', label: 'Grade 12' },
-    { value: 'college_1', label: 'College - 1st Year' },
-    { value: 'college_2', label: 'College - 2nd Year' },
-    { value: 'college_3', label: 'College - 3rd Year' },
-    { value: 'college_4', label: 'College - 4th Year' }
+    { value: 7, label: 'Grade 7' },
+    { value: 8, label: 'Grade 8' },
+    { value: 9, label: 'Grade 9' },
+    { value: 10, label: 'Grade 10' },
+    { value: 11, label: 'Grade 11' },
+    { value: 12, label: 'Grade 12' },
+    { value: 13, label: 'College - 1st Year' },
+    { value: 14, label: 'College - 2nd Year' },
+    { value: 15, label: 'College - 3rd Year' },
+    { value: 16, label: 'College - 4th Year' }
   ];
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'gradeLevel') {
+      onChange({
+        target: {
+          name,
+          value: value === '' ? '' : Number(value) 
+        }
+      });
+    } else {
+      onChange(e);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -29,7 +44,7 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
         name="school"
         placeholder="University of the Philippines"
         value={formData.school}
-        onChange={onChange}
+        onChange={handleChange}
         error={errors.school}
         required
       />
@@ -38,11 +53,11 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
         <Select
           icon={GraduationCap}
           label="Grade Level"
-          name="grade_level"
+          name="gradeLevel"
           options={gradeLevels}
-          value={formData.grade_level}
-          onChange={onChange}
-          error={errors.grade_level}
+          value={formData.gradeLevel}
+          onChange={handleChange}
+          error={errors.gradeLevel}
           required
         />
 
@@ -53,19 +68,19 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
           name="major"
           placeholder="Computer Science"
           value={formData.major}
-          onChange={onChange}
+          onChange={handleChange}
           error={errors.major}
         />
       </div>
 
       <Textarea
         label="Learning Goals"
-        name="goals"
+        name="learningGoals"
         placeholder="What do you want to achieve on Studdy?"
-        value={formData.goals}
-        onChange={onChange}
+        value={formData.learningGoals}
+        onChange={handleChange}
         rows={3}
-        error={errors.goals}
+        error={errors.learningGoals}
       />
     </div>
   );

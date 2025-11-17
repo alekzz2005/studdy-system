@@ -38,8 +38,14 @@ const LoginPage = () => {
     try {
       const response = await authAPI.login(formData);
       console.log('Login successful:', response);
-      // Handle successful login (redirect, store token, etc.)
-      navigate('/'); // Redirect after successful login
+      if (response.success) {
+        // Store user data in context or state management
+        localStorage.setItem('user', JSON.stringify(response.user));
+        // For now, just redirect
+        navigate('/dashboard');
+      } else {
+        setErrors({ submit: response.message || 'Login failed' });
+      }
     } catch (error) {
       setErrors({ submit: error.response?.data?.message || error.message || 'Login failed' });
     } finally {
