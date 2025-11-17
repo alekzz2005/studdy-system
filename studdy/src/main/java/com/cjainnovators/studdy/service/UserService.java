@@ -1,4 +1,4 @@
-package com.appdev.cjainnovators.besanezg5.service;
+package com.cjainnovators.studdy.service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -6,8 +6,8 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.appdev.cjainnovators.besanezg5.entity.UserEntity;
-import com.appdev.cjainnovators.besanezg5.repository.UserRepository;
+import com.cjainnovators.studdy.entity.UserEntity;
+import com.cjainnovators.studdy.repository.UserRepository;
 
 @Service
 public class UserService {
@@ -69,5 +69,11 @@ public class UserService {
         }
 
         return msg;
+    }
+
+    // Add this method to UserService class
+    public UserEntity getUserById(int userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User with ID " + userId + " does not exist."));
     }
 }

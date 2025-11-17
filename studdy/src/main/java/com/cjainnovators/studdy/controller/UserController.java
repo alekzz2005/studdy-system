@@ -1,4 +1,4 @@
-package com.appdev.cjainnovators.besanezg5.controller;
+package com.cjainnovators.studdy.controller;
 
 import java.util.List;
 
@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.appdev.cjainnovators.besanezg5.entity.UserEntity;
-import com.appdev.cjainnovators.besanezg5.service.UserService;
+import com.cjainnovators.studdy.entity.UserEntity;
+import com.cjainnovators.studdy.service.UserService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
