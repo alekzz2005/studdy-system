@@ -3,9 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './components/pages/LandingPage';
 import LoginPage from './components/auth/Login';
 import RegisterPage from './components/auth/Register';
-import './styles/index.css';
 import Dashboard from './components/pages/Dashboard';
 import BookTutor from './components/pages/BookTutor';
+
+import './styles/index.css';
 
 const isAuthenticated = () => {
   const user = localStorage.getItem('user');
