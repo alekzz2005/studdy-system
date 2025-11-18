@@ -5,6 +5,7 @@ import LoginPage from './components/auth/Login';
 import RegisterPage from './components/auth/Register';
 import './styles/index.css';
 import Dashboard from './components/pages/Dashboard';
+import BookTutor from './components/pages/BookTutor';
 
 const isAuthenticated = () => {
   const user = localStorage.getItem('user');
@@ -31,7 +32,8 @@ function App() {
           <Route path="/login" element={<PublicRoute> <LoginPage /> </PublicRoute>} />
           <Route path="/register" element={<PublicRoute> <RegisterPage /> </PublicRoute>} />
 
-          <Route path="/dashboard" element={<ProtectedRoute> <Dashboard/> </ProtectedRoute>} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/book-tutor" element={<BookTutor />} />
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" />} />

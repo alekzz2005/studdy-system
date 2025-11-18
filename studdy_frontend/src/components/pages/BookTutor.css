@@ -1,0 +1,170 @@
+.book-tutor-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.book-tutor-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.book-tutor-header h1 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.book-tutor-header p {
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+.booking-form {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.form-section h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ecf0f1;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.form-group select.error,
+.form-group input.error {
+  border-color: #e74c3c;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 5px;
+  display: block;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.tutor-details {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.tutor-details h4 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.tutor-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.tutor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tutor-info strong {
+  font-size: 16px;
+  color: #2c3e50;
+}
+
+.tutor-info span {
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.time-selection {
+  margin-top: 20px;
+}
+
+.duration-display {
+  background: #e8f5e8;
+  padding: 15px;
+  border-radius: 6px;
+  text-align: center;
+  margin-top: 20px;
+  color: #27ae60;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 15px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #2980b9;
+}
+
+.submit-button:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .book-tutor-container {
+    padding: 10px;
+  }
+  
+  .booking-form {
+    padding: 20px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

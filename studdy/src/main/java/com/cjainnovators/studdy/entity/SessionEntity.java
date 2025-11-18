@@ -1,8 +1,16 @@
 package com.cjainnovators.studdy.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "session")
@@ -14,7 +22,7 @@ public class SessionEntity {
 
     @ManyToOne
     @JoinColumn(name = "tutor_id", nullable = false)
-    private UserEntity tutor;
+    private UserEntity tutor;       
 
     @ManyToOne
     @JoinColumn(name = "tutee_id", nullable = false)
@@ -25,13 +33,13 @@ public class SessionEntity {
     private SubjectEntity subject;
 
     @Column(name = "session_date", nullable = false)
-    private LocalDate sessionDate;
+    private LocalDate sessionDate; // Date of the session
 
     @Column(name = "start_time", nullable = false)
-    private LocalTime startTime;
+    private LocalTime startTime; // Start time of the session
 
     @Column(name = "end_time", nullable = false)
-    private LocalTime endTime;
+    private LocalTime endTime; // End time of the session
 
     @Column(name = "status")
     private String status; // SCHEDULED, COMPLETED, CANCELLED, NO_SHOW

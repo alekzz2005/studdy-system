@@ -158,7 +158,7 @@ const LandingPage = () => {
 
   const handleGetStarted = () => {
     navigate('/register');
-  };
+  };  
 
   return (
     <div className="landing-page">
