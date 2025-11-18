@@ -31,7 +31,14 @@ const InputField = ({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`input-field ${Icon ? 'input-with-icon' : ''} ${error ? 'border-red-500' : ''}`}
+          className={`
+            w-full py-3 border-2 rounded-lg focus:outline-none transition-colors
+            ${Icon ? 'pl-12 pr-4' : 'px-4'}
+            ${error 
+              ? 'border-red-500 focus:border-red-500' 
+              : 'border-gray-300 focus:border-blue-500'
+            }
+          `}
         />
       </div>
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}

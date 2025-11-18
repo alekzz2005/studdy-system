@@ -1,5 +1,6 @@
 // components/pages/Dashboard.jsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Reusable components for better code organization
 const IconWrapper = ({ children, style = {} }) => (
@@ -324,9 +325,16 @@ const ProgressBar = ({ label, percentage }) => (
   </div>
 );
 
+  const studystat = [
+                  { label: 'Sessions Completed', value: '20' },
+                  { label: 'Hours Studied', value: '20' },
+                  { label: 'Average Rating', value: '4.8' }
+                ];
+
 // Main Dashboard Component
 const Dashboard = () => {
   // Mock data - in a real app, this would come from API calls
+  const navigate = useNavigate();
   const upcomingSessions = [
     {
       id: 1,
@@ -363,6 +371,10 @@ const Dashboard = () => {
     { subject: 'Physics', percentage: 72 },
     { subject: 'Chemistry', percentage: 90 }
   ];
+
+  const handleBookSession = () => [
+    navigate('/book-tutor')
+  ]
 
   return (
     <div style={{
@@ -420,7 +432,7 @@ const Dashboard = () => {
               width: 178.15, 
               height: 51.56,
               fontSize: 16
-            }}>
+            }} onClick={ handleBookSession }>
               Book a session
             </Button>
             
@@ -637,11 +649,7 @@ const Dashboard = () => {
                   This Month
                 </div>
 
-                {[
-                  { label: 'Sessions Completed', value: '12' },
-                  { label: 'Hours Studied', value: '18.5' },
-                  { label: 'Average Rating', value: '4.8' }
-                ].map((stat, index) => (
+                {studystat.map((stat, index) => (
                   <div key={index} style={{
                     background: 'white',
                     borderRadius: 12,
