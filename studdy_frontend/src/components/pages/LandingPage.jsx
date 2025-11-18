@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '../common/Button';
 import { fetchLandingPageStats } from '../../services/api';
-import './LandingPage.css';
+import './styles/LandingPage.css';
+
+import Header from '../landing/HeaderSection';
+
+import HeroSection from '../landing/HeroSection';
+import FeaturesSection from '../landing/FeaturesSection';
+import HowItWorksSection from '../landing/HowItWorksSection';
+import SubjectsSection from '../landing/SubjectsSection';
+import CTASection from '../landing/CTASection';
+
+import Footer from '../landing/FooterSection';
 
 const LandingPage = () => {
   const [stats, setStats] = useState({
@@ -14,7 +23,6 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch landing page statistics from API
     const loadStats = async () => {
       try {
         const statsData = await fetchLandingPageStats();
@@ -175,323 +183,11 @@ const LandingPage = () => {
       
       {/* Features Section */}
       <FeaturesSection features={features} />
-      
-      {/* Subjects Section */}
       <SubjectsSection subjects={subjects} />
-      
-      {/* How It Works Section */}
       <HowItWorksSection steps={steps} />
-      
-      {/* CTA Section */}
       <CTASection onFindTutor={handleFindTutor} onBecomeTutor={handleBecomeTutor} />
       
-      {/* Footer */}
       <Footer />
-    </div>
-  );
-};
-
-// Header Component
-const Header = ({ onSignIn, onGetStarted }) => {
-  const navigate = useNavigate();
-
-  const handleLogoClick = (e) => {
-    e.preventDefault();
-    navigate('/');
-  };
-
-  const handleSmoothScroll = (e, sectionId) => {
-    e.preventDefault();
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  return (
-    <header className="header">
-      <div className="container">
-        <div className="header-content">
-          <a href="/" className="logo" onClick={handleLogoClick}>Studdy</a>
-          <nav>
-            <ul>
-              <li><a href="#features" onClick={(e) => handleSmoothScroll(e, 'features')}>Features</a></li>
-              <li><a href="#how-it-works" onClick={(e) => handleSmoothScroll(e, 'how-it-works')}>How It Works</a></li>
-              <li><a href="#subjects" onClick={(e) => handleSmoothScroll(e, 'subjects')}>Subjects</a></li>
-            </ul>
-          </nav>
-          <div className="header-actions">
-            <Button variant="outline" onClick={onSignIn}>Sign In</Button>
-            <Button variant="primary" onClick={onGetStarted}>Get Started</Button>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-};
-
-// Hero Section Component
-const HeroSection = ({ stats, loading, onFindTutor, onBecomeTutor }) => {
-  return (
-    <section className="hero">
-      <div className="container">
-        <div className="hero-content">
-          <span className="tag">Interactive Learning</span>
-          <h1>Connect. Learn. Collaborate.</h1>
-          <p>Studdy connects students for peer-to-peer tutoring and academic collaboration. Get help from qualified fellow students or share your knowledge to support others in their learning journey.</p>
-          <div className="hero-actions">
-            <Button variant="primary" onClick={onFindTutor}>
-              Find a Tutor <i className="fas fa-arrow-right"></i>
-            </Button>
-            <Button variant="outline" onClick={onBecomeTutor}>
-              Become a Tutor
-            </Button>
-          </div>
-          <div className="hero-stats">
-            <StatItem 
-              icon="fas fa-user" 
-              value={loading ? '...' : `${stats.activeUsers}+`} 
-              label="Active Users" 
-            />
-            <StatItem 
-              icon="fas fa-book-open" 
-              value={loading ? '...' : `${stats.subjects}+`} 
-              label="Subjects" 
-            />
-            <StatItem 
-              icon="fas fa-star" 
-              value={loading ? '...' : stats.rating} 
-              label="Average Rating" 
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// Stat Item Component
-const StatItem = ({ icon, value, label }) => {
-  return (
-    <div className="stat">
-      <div className="stat-value">
-        <i className={icon}></i> {value}
-      </div>
-      <div className="stat-label">{label}</div>
-    </div>
-  );
-};
-
-// Features Section Component
-const FeaturesSection = ({ features }) => {
-  return (
-    <section id="features" className="section">
-      <div className="container">
-        <SectionTitle 
-          title="Why Choose Studdy?"
-          subtitle="Experience peer-to-peer learning with features designed to make tutoring accessible, affordable, and effective for every student."
-        />
-        <div className="features-grid">
-          {features.map((feature, index) => (
-            <FeatureCard key={index} {...feature} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// Feature Card Component
-const FeatureCard = ({ icon, title, description }) => {
-  return (
-    <div className="feature-card">
-      <div className="feature-icon">
-        <i className={icon}></i>
-      </div>
-      <h3>{title}</h3>
-      <p>{description}</p>
-    </div>
-  );
-};
-
-// Subjects Section Component
-const SubjectsSection = ({ subjects }) => {
-  return (
-    <section id="subjects" className="section subjects">
-      <div className="container">
-        <SectionTitle 
-          title="Explore Our Subjects"
-          subtitle="Find expert tutors across a wide range of academic subjects to help you succeed in your studies."
-        />
-        <div className="subjects-grid">
-          {subjects.map((subject, index) => (
-            <SubjectCard key={index} {...subject} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// Subject Card Component
-const SubjectCard = ({ icon, title, description }) => {
-  return (
-    <div className="subject-card">
-      <div className="subject-icon">
-        <i className={icon}></i>
-      </div>
-      <h3>{title}</h3>
-      <p>{description}</p>
-    </div>
-  );
-};
-
-// How It Works Section Component
-const HowItWorksSection = ({ steps }) => {
-  return (
-    <section id="how-it-works" className="section how-it-works">
-      <div className="container">
-        <SectionTitle 
-          title="How Studdy Works"
-          subtitle="Getting started with peer tutoring is simple. Follow these easy steps to connect with qualified student tutors and start improving your grades."
-        />
-        <div className="steps">
-          {steps.map((step, index) => (
-            <StepCard key={index} {...step} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// Step Card Component
-const StepCard = ({ number, title, description }) => {
-  return (
-    <div className="step-card">
-      <div className="step-number">
-        <span>{number}</span>
-      </div>
-      <h3>{title}</h3>
-      <p>{description}</p>
-    </div>
-  );
-};
-
-// CTA Section Component
-const CTASection = ({ onFindTutor, onBecomeTutor }) => {
-  return (
-    <section className="container">
-      <div className="cta">
-        <h2>Ready to Start Learning?</h2>
-        <p>Join thousands of students already improving their grades with Studdy's peer tutoring network.</p>
-        <div className="cta-buttons">
-          <Button 
-            variant="primary" 
-            className="btn-white"
-            onClick={onFindTutor}
-          >
-            Find a Tutor Now <i className="fas fa-arrow-right"></i>
-          </Button>
-          <Button 
-            variant="outline" 
-            className="btn-outline-white"
-            onClick={onBecomeTutor}
-          >
-            Become a Tutor
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// Footer Component
-const Footer = () => {
-  const footerLinks = {
-    quickLinks: [
-      { label: 'Find Tutors', href: '#find-tutors' },
-      { label: 'Become a Tutor', href: '#become-tutor' },
-      { label: 'How It Works', href: '#how-it-works' },
-      { label: 'Subjects', href: '#subjects' }
-    ],
-    support: [
-      { label: 'Help Center', href: '#' },
-      { label: 'Contact Us', href: '#' },
-      { label: 'Safety Guidelines', href: '#' },
-      { label: 'Community Rules', href: '#' }
-    ],
-    legal: [
-      { label: 'Privacy Policy', href: '#' },
-      { label: 'Terms of Service', href: '#' },
-      { label: 'Cookie Policy', href: '#' },
-      { label: 'Refund Policy', href: '#' }
-    ]
-  };
-
-  return (
-    <footer>
-      <div className="container">
-        <div className="footer-content">
-          <div className="footer-column">
-            <h3>Studdy</h3>
-            <p>Connecting students for affordable peer tutoring. Learn from qualified fellow students and earn while you teach.</p>
-            <SocialLinks />
-          </div>
-          <FooterColumn title="Quick Links" links={footerLinks.quickLinks} />
-          <FooterColumn title="Support" links={footerLinks.support} />
-          <FooterColumn title="Legal" links={footerLinks.legal} />
-        </div>
-        <div className="footer-bottom">
-          <p>© 2025 Studdy. All rights reserved. Empowering students through peer learning.</p>
-        </div>
-      </div>
-    </footer>
-  );
-};
-
-// Footer Column Component
-const FooterColumn = ({ title, links }) => {
-  return (
-    <div className="footer-column">
-      <h3>{title}</h3>
-      <ul className="footer-links">
-        {links.map((link, index) => (
-          <li key={index}>
-            <a href={link.href}>{link.label}</a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-// Social Links Component
-const SocialLinks = () => {
-  const socialPlatforms = [
-    { icon: 'fab fa-facebook-f', href: '#' },
-    { icon: 'fab fa-twitter', href: '#' },
-    { icon: 'fab fa-instagram', href: '#' },
-    { icon: 'fab fa-linkedin-in', href: '#' }
-  ];
-
-  return (
-    <div className="social-links">
-      {socialPlatforms.map((platform, index) => (
-        <a key={index} href={platform.href} className="social-link">
-          <i className={platform.icon}></i>
-        </a>
-      ))}
-    </div>
-  );
-};
-
-// Reusable Section Title Component
-const SectionTitle = ({ title, subtitle }) => {
-  return (
-    <div className="section-title">
-      <h2>{title}</h2>
-      <p>{subtitle}</p>
     </div>
   );
 };

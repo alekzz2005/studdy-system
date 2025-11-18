@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, User, BookOpen, GraduationCap } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 import Button from '../common/Button';
-import SubjectSelection from './SubjectSelection';
-import TutorSelection from './TutorSelection';
-import ScheduleSession from './ScheduleSession';
-import { bookingAPI } from '../../services/api';
-import './BookTutor.css';
+import SubjectSelection from './BookTutorSteps/SubjectSelection';
+import TutorSelection from './BookTutorSteps/TutorSelection';
+import ScheduleSession from './BookTutorSteps/ScheduleSession';
+import './styles/BookTutor.css';
 
 const BookTutor = () => {
   const [step, setStep] = useState(1);
@@ -24,7 +23,6 @@ const BookTutor = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Mock data - replace with actual API calls
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -65,7 +63,6 @@ const BookTutor = () => {
   const fetchAvailableSlots = async (tutorId, date) => {
     setIsLoading(true);
     try {
-      // Mock API call - replace with actual endpoint
       const mockSlots = [
         { startTime: '09:00', endTime: '10:00', available: true },
         { startTime: '10:30', endTime: '11:30', available: true },
@@ -88,7 +85,6 @@ const BookTutor = () => {
       [name]: value
     }));
 
-    // Clear related fields when dependencies change
     if (name === 'subjectId') {
       setFormData(prev => ({ 
         ...prev, 
@@ -97,7 +93,6 @@ const BookTutor = () => {
         startTime: '', 
         endTime: '' 
       }));
-      setStep(2); // Move to tutor selection
     } else if (name === 'tutorId') {
       setFormData(prev => ({ 
         ...prev, 
@@ -105,7 +100,6 @@ const BookTutor = () => {
         startTime: '', 
         endTime: '' 
       }));
-      setStep(3); // Move to schedule selection
     }
 
     // Clear errors
