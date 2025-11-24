@@ -225,6 +225,7 @@ h1 {
   padding: 80px 0;
 }
 
+/* Center ALL section titles including Features, Subjects, and How It Works */
 .section-title {
   text-align: center;
   margin-bottom: 64px;
@@ -235,6 +236,7 @@ h1 {
   font-weight: 700;
   margin-bottom: 16px;
   color: var(--gray-900);
+  text-align: center;
 }
 
 .section-title p {
@@ -242,6 +244,7 @@ h1 {
   color: var(--gray-500);
   max-width: 768px;
   margin: 0 auto;
+  text-align: center;
 }
 
 /* Features Grid */
@@ -419,6 +422,7 @@ h1 {
   font-size: 36px;
   font-weight: 700;
   margin-bottom: 24px;
+  text-align: center;
 }
 
 .cta p {
@@ -428,6 +432,7 @@ h1 {
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+  text-align: center;
 }
 
 .cta-buttons {
@@ -577,4 +582,27 @@ footer {
     flex-direction: column;
     align-items: center;
   }
+}
+
+/* FORCE CENTER SPECIFIC SECTION TITLES */
+#subjects .section-title,
+#how-it-works .section-title {
+  text-align: center !important;
+  width: 100% !important;
+}
+
+#subjects .section-title h2,
+#how-it-works .section-title h2 {
+  text-align: center !important;
+  width: 100% !important;
+}
+
+#subjects .section-title p,
+#how-it-works .section-title p {
+  text-align: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: 100% !important;
+  max-width: 768px !important;
+  display: block !important;
 }
