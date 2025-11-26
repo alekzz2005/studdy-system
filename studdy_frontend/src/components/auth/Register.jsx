@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
 import AuthLayout from '../layout/AuthLayout';
 import Button from '../common/Button';
+import StepIndicator from '../common/StepIndicator';
 import BasicInfo from './RegisterSteps/BasicInfo';
 import AcademicInfo from './RegisterSteps/AcademicInfo';
 import AboutYou from './RegisterSteps/AboutYou';
@@ -28,6 +29,12 @@ const RegisterPage = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const registerSteps = [
+    { number: 1 },
+    { number: 2 },
+    { number: 3 }
+  ];
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -85,8 +92,7 @@ const RegisterPage = () => {
         try {
           const response = await authAPI.register(formData);
           console.log('Registration successful:', response);
-          // Handle successful registration
-          navigate('/'); // Redirect after successful registration
+          navigate('/');
         } catch (error) {
           setErrors({ submit: error.response?.data?.message || error.message || 'Registration failed' });
         } finally {
@@ -106,19 +112,6 @@ const RegisterPage = () => {
     navigate('/login');
   };
 
-  const StepIndicator = () => (
-    <div className="step-indicator">
-      {[1, 2, 3].map((s) => (
-        <React.Fragment key={s}>
-          <div className={`step-circle ${step >= s ? 'step-active' : 'step-inactive'}`}>
-            {s}
-          </div>
-          {s < 3 && <div className={`step-connector ${step > s ? 'step-connector-active' : 'step-connector-inactive'}`}></div>}
-        </React.Fragment>
-      ))}
-    </div>
-  );
-
   return (
     <AuthLayout 
       title="Join Studdy" 
@@ -126,7 +119,7 @@ const RegisterPage = () => {
       icon={GraduationCap}
       size="lg"
     >
-      <StepIndicator />
+      <StepIndicator currentStep={step} steps={registerSteps} />
 
       <div>
         {step === 1 && <BasicInfo formData={formData} onChange={handleChange} errors={errors} />}
