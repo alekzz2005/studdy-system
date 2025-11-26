@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
 import Button from '../common/Button';
+import StepIndicator from '../common/StepIndicator';
 import SubjectSelection from './BookTutorSteps/SubjectSelection';
 import TutorSelection from './BookTutorSteps/TutorSelection';
 import ScheduleSession from './BookTutorSteps/ScheduleSession';
@@ -23,10 +24,15 @@ const BookTutor = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const bookTutorSteps = [
+    { number: 1 },
+    { number: 2 },
+    { number: 3 }
+  ];
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // Fetch subjects
         const mockSubjects = [
           { subjectId: 1, name: 'Mathematics', category: 'Science' },
           { subjectId: 2, name: 'Physics', category: 'Science' },
@@ -36,7 +42,6 @@ const BookTutor = () => {
         ];
         setSubjects(mockSubjects);
 
-        // Fetch tutors
         const mockTutors = [
           { userId: 1, name: 'John Smith', expertise: ['Mathematics', 'Physics'], rating: 4.8 },
           { userId: 2, name: 'Sarah Johnson', expertise: ['English Literature'], rating: 4.9 },
@@ -53,7 +58,6 @@ const BookTutor = () => {
     fetchInitialData();
   }, []);
 
-  // Fetch available slots when tutor and date are selected
   useEffect(() => {
     if (formData.tutorId && formData.sessionDate) {
       fetchAvailableSlots(formData.tutorId, formData.sessionDate);
@@ -102,7 +106,6 @@ const BookTutor = () => {
       }));
     }
 
-    // Clear errors
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -124,7 +127,6 @@ const BookTutor = () => {
       if (!formData.startTime) newErrors.startTime = 'Please select start time';
       if (!formData.endTime) newErrors.endTime = 'Please select end time';
 
-      // Validate time logic
       if (formData.startTime && formData.endTime) {
         if (formData.startTime >= formData.endTime) {
           newErrors.endTime = 'End time must be after start time';
@@ -145,10 +147,9 @@ const BookTutor = () => {
       if (validateStep(step)) {
         setIsLoading(true);
         try {
-          // Prepare session data according to your entity structure
           const sessionData = {
             tutorId: parseInt(formData.tutorId),
-            tuteeId: 1, // This would come from authenticated user context
+            tuteeId: 1,
             subjectId: parseInt(formData.subjectId),
             sessionDate: formData.sessionDate,
             startTime: formData.startTime,
@@ -156,14 +157,11 @@ const BookTutor = () => {
             status: 'SCHEDULED'
           };
 
-          // Mock API call - replace with actual endpoint
           console.log('Booking session:', sessionData);
           
-          // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Handle successful booking
-          navigate('/dashboard'); // Redirect after successful booking
+          navigate('/dashboard');
           
         } catch (error) {
           setErrors({ 
@@ -193,26 +191,6 @@ const BookTutor = () => {
     );
   };
 
-  const StepIndicator = () => (
-  <div className="step-indicator">
-    {[
-      { number: 1, label: 'Subject' },
-      { number: 2, label: 'Tutor' },
-      { number: 3, label: 'Schedule' }
-    ].map((stepInfo, index) => (
-      <React.Fragment key={stepInfo.number}>
-        <div className={`step-item ${step >= stepInfo.number ? 'step-active' : 'step-inactive'}`}>
-          <div className="step-circle">
-            <span className="step-number">{stepInfo.number}</span>
-          </div>
-          <span className="step-label">{stepInfo.label}</span>
-        </div>
-        {index < 2 && <div className={`step-connector ${step > stepInfo.number ? 'step-connector-active' : 'step-connector-inactive'}`}></div>}
-      </React.Fragment>
-    ))}
-  </div>
-);
-
   return (
     <div className="book-tutor-container">
       <div className="book-tutor-card">
@@ -224,7 +202,7 @@ const BookTutor = () => {
           <p className="book-tutor-subtitle">Find the perfect tutor and schedule your learning session</p>
         </div>
         
-        <StepIndicator />
+        <StepIndicator currentStep={step} steps={bookTutorSteps} />
 
         <div className="booking-content">
           {step === 1 && (
