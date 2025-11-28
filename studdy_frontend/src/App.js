@@ -5,6 +5,7 @@ import LoginPage from './components/auth/Login';
 import RegisterPage from './components/auth/Register';
 import Dashboard from './components/pages/Dashboard';
 import BookTutor from './components/pages/BookTutor';
+import Sessions from './components/pages/Sessions'; // Add this import
 
 import './styles/index.css';
 
@@ -30,11 +31,48 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           
           {/* Auth routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route 
+            path="/login" 
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/register" 
+            element={
+              <PublicRoute>
+                <RegisterPage />
+              </PublicRoute>
+            } 
+          />
 
-          <Route path="/dashboard" element={<Dashboard/>} />
-          <Route path="/book-tutor" element={<BookTutor/>} />
+          {/* Protected routes */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/book-tutor" 
+            element={
+              <ProtectedRoute>
+                <BookTutor />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/sessions" 
+            element={
+              <PublicRoute>
+                <Sessions />
+              </PublicRoute>
+            } 
+          />
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" />} />
