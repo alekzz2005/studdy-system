@@ -101,25 +101,27 @@ const Sessions = () => {
         </div>
       </header>
 
-      <div className="main-content">
-        {/* Sidebar */}
-        <aside className="sidebar">
-          <h2 className="sidebar-title">Quick Actions</h2>
-          <div className="quick-actions">
-            {quickActions.map(action => (
-              <button 
-                key={action.id} 
-                className={`action-btn ${action.active ? 'active' : ''}`}
-              >
-                <action.icon size={16} />
-                {action.label}
-              </button>
-            ))}
-          </div>
-        </aside>
+      <div className="main-layout-wrapper">
+        {/* Full-height Sidebar */}
+        <div className="sidebar-full-height">
+          <aside className="sidebar">
+            <h2 className="sidebar-title">Quick Actions</h2>
+            <div className="quick-actions">
+              {quickActions.map(action => (
+                <button 
+                  key={action.id} 
+                  className={`action-btn ${action.active ? 'active' : ''}`}
+                >
+                  <action.icon size={16} />
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          </aside>
+        </div>
 
         {/* Main Content Area */}
-        <main className="content">
+        <main className="content-full-height">
           {/* Page Header */}
           <section className="page-header">
             <h1 className="page-title">My Sessions</h1>
