@@ -5,12 +5,20 @@ import LoginPage from './components/auth/Login';
 import RegisterPage from './components/auth/Register';
 import Dashboard from './components/pages/Dashboard';
 import BookTutor from './components/pages/BookTutor';
-import Sessions from './components/pages/Sessions'; // Add this import
+import Sessions from './components/pages/Sessions'; 
+import Profile from './components/pages/Profile'; 
 
 import './styles/index.css';
 
+/*const isAuthenticated = () => {
+  const user = localStorage.getItem('user');
+  return !!user; 
+};*/
+
 const isAuthenticated = () => {
   const user = localStorage.getItem('user');
+  console.log('User in localStorage:', user);
+  console.log('Is authenticated:', !!user);
   return !!user; 
 };
 
@@ -30,49 +38,15 @@ function App() {
           {/* Landing Page - Public route */}
           <Route path="/" element={<LandingPage />} />
           
-          {/* Auth routes */}
-          <Route 
-            path="/login" 
-            element={
-              <PublicRoute>
-                <LoginPage />
-              </PublicRoute>
-            } 
-          />
-          <Route 
-            path="/register" 
-            element={
-              <PublicRoute>
-                <RegisterPage />
-              </PublicRoute>
-            } 
-          />
+          {/* Auth routes - temporarily remove PublicRoute */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-          {/* Protected routes */}
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/book-tutor" 
-            element={
-              <ProtectedRoute>
-                <BookTutor />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/sessions" 
-            element={
-              <PublicRoute>
-                <Sessions />
-              </PublicRoute>
-            } 
-          />
+          {/* Protected routes - temporarily remove ProtectedRoute */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/book-tutor" element={<BookTutor />} />
+          <Route path="/sessions" element={<Sessions />} />
+          <Route path="/profile" element={<Profile />} />
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" />} />
@@ -81,5 +55,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;
