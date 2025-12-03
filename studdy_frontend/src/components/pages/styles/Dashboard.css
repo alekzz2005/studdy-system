@@ -66,10 +66,14 @@
 }
 
 .dashboard-sidebar {
-  width: 256px;
-  background: white;
-  border-right: 1.78px #E5E7EB solid;
-  padding: 24px;
+  width: 256px; /* Fixed width for the sidebar */
+  background: white; /* Ensure the background is white */
+  border-right: 1.78px solid #E5E7EB; /* Add a border for separation */
+  padding: 24px; /* Padding inside the sidebar */
+  position: sticky; /* Make the sidebar stick while scrolling */
+  top: 0; /* Stick to the top of the viewport */
+  height: 100vh; /* Full viewport height */
+  overflow-y: auto; /* Add scroll if the content overflows */
 }
 
 .sidebar-title {
