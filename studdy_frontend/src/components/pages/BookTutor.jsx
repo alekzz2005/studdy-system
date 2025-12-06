@@ -6,8 +6,8 @@ import StepIndicator from '../common/StepIndicator';
 import SubjectSelection from './BookTutorSteps/SubjectSelection';
 import TutorSelection from './BookTutorSteps/TutorSelection';
 import ScheduleSession from './BookTutorSteps/ScheduleSession';
-import { sessionService } from '../../services/SessionService';
-import { userService } from '../../services/UserService';
+import { sessionService } from '../../services/session';
+import { userAPI } from '../../services/user';
 import './styles/BookTutor.css';
 
 const BookTutor = () => {
@@ -156,7 +156,7 @@ const BookTutor = () => {
         setIsLoading(true);
         try {
           // Get current user ID
-          const currentUser = userService.getCurrentUser();
+          const currentUser = userAPI.getCurrentUser();
           if (!currentUser || !currentUser.userId) {
             throw new Error('Please log in to book a session');
           }

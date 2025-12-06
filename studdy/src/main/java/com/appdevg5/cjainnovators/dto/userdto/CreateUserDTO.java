@@ -22,5 +22,4 @@ public class CreateUserDTO {
     private String school;
     private int gradeLevel;
     private String major;
-    private String goals;
 }

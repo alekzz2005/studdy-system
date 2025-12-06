@@ -19,12 +19,6 @@ public interface TuteeRepository extends JpaRepository<TuteeEntity, Long> {
     @Query("SELECT t FROM TuteeEntity t WHERE t.hoursStudied >= :minHours")
     List<TuteeEntity> findByMinHoursStudied(@Param("minHours") int minHours);
     
-    @Query("SELECT DISTINCT t FROM TuteeEntity t " +
-           "JOIN t.subjects ts " +
-           "JOIN ts.subject s " +
-           "WHERE LOWER(s.subjectName) LIKE LOWER(CONCAT('%', :subjectName, '%'))")
-    List<TuteeEntity> findBySubjectName(@Param("subjectName") String subjectName);
-    
     @Query("SELECT t FROM TuteeEntity t WHERE t.user.active = true")
     List<TuteeEntity> findAllActiveTutees();
     

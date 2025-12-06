@@ -11,4 +11,5 @@ public class UpdateTutorDTO {
     private LocalDate dateStarted;
     private Float averageRating;
     private List<TutorSubjectRequestDTO> subjects;
+    private boolean available;
 }

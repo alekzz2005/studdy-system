@@ -33,7 +33,7 @@ public class TutorController {
         }
     }
     
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<?> getTutorById(@PathVariable Long id) {
         try {
             TutorDTO tutor = tutorService.getTutorById(id);
@@ -71,7 +71,7 @@ public class TutorController {
         }
     }
     
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteTutor(@PathVariable Long id) {
         try {
             String message = tutorService.deleteTutor(id);
@@ -82,24 +82,7 @@ public class TutorController {
         }
     }
     
-    @PostMapping("/search")
-    public ResponseEntity<List<TutorDTO>> searchTutors(@RequestBody TutorSearchDTO searchDTO) {
-        List<TutorDTO> tutors = tutorService.searchTutors(searchDTO);
-        return ResponseEntity.ok(tutors);
-    }
-    
-    @GetMapping("/{id}/profile")
-    public ResponseEntity<?> getTutorProfile(@PathVariable Long id) {
-        try {
-            TutorProfileDTO profile = tutorService.getTutorProfile(id);
-            return ResponseEntity.ok(profile);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", e.getMessage()));
-        }
-    }
-    
-    @PostMapping("/{id}/subjects")
+    @PostMapping("/subjects/{id}")
     public ResponseEntity<?> addSubjectToTutor(
             @PathVariable Long id, 
             @RequestBody TutorSubjectRequestDTO subjectRequest) {
@@ -123,12 +106,5 @@ public class TutorController {
             return ResponseEntity.badRequest()
                 .body(Map.of("message", e.getMessage()));
         }
-    }
-    
-    @GetMapping("/available/{subjectName}")
-    public ResponseEntity<List<TutorDTO>> getAvailableTutorsForSubject(
-            @PathVariable String subjectName) {
-        List<TutorDTO> tutors = tutorService.getAvailableTutorsForSubject(subjectName);
-        return ResponseEntity.ok(tutors);
     }
 }

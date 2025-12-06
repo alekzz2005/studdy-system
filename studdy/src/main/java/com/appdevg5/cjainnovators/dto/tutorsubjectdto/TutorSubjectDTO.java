@@ -16,6 +16,4 @@ public class TutorSubjectDTO {
     private String subjectName;
     private String subjectDesc;
     private int proficiencyLevel; // 1-5 scale
-    private boolean isAvailable;
-    private Double hourlyRate; // Optional: Add if you want tutor-specific rates
 }

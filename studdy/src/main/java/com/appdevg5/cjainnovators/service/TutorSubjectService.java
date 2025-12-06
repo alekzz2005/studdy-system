@@ -25,39 +25,7 @@ public class TutorSubjectService {
     private final TutorRepository tutorRepository;
     private final SubjectRepository subjectRepository;
 
-    // Convert Entity to DTO
-    private TutorSubjectDTO convertToDTO(TutorSubjectEntity tutorSubject) {
-        return TutorSubjectDTO.builder()
-                .tutorSubjectId(tutorSubject.getTutorSubjectId())
-                .tutorId(tutorSubject.getTutor().getTutorId())
-                .subjectId(tutorSubject.getSubject().getSubjectId())
-                .subjectName(tutorSubject.getSubject().getSubjectName())
-                .proficiencyLevel(tutorSubject.getProficiencyLevel())
-                .isAvailable(tutorSubject.isAvailable())
-                .build();
-    }
-
-    // Convert DTO to Entity
-    private TutorSubjectEntity convertToEntity(CreateTutorSubjectDTO dto) {
-        TutorEntity tutor = tutorRepository.findById(dto.getTutorId())
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Tutor with ID " + dto.getTutorId() + " not found"));
-        
-        SubjectEntity subject = subjectRepository.findById(dto.getSubjectId())
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Subject with ID " + dto.getSubjectId() + " not found"));
-        
-        return TutorSubjectEntity.builder()
-                .tutor(tutor)
-                .subject(subject)
-                .proficiencyLevel(dto.getProficiencyLevel())
-                .isAvailable(dto.isAvailable())
-                .build();
-    }
-
-    // ============ CRUD OPERATIONS ============
-
-    // CREATE - Add a new tutor-subject association
+    // CREATE 
     @Transactional
     public TutorSubjectDTO createTutorSubject(CreateTutorSubjectDTO createDTO) {
         // Check if the association already exists
@@ -111,35 +79,6 @@ public class TutorSubjectService {
                 .collect(Collectors.toList());
     }
 
-    // READ - Get available tutors for a subject
-    public List<TutorSubjectDTO> getAvailableTutorsBySubject(Long subjectId) {
-        return tutorSubjectRepository.findBySubject_SubjectId(subjectId).stream()
-                .filter(TutorSubjectEntity::isAvailable)
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    // UPDATE - Update a tutor-subject association
-    @Transactional
-    public TutorSubjectDTO updateTutorSubject(Long tutorSubjectId, UpdateTutorSubjectDTO updateDTO) {
-        TutorSubjectEntity tutorSubject = tutorSubjectRepository.findById(tutorSubjectId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "TutorSubject with ID " + tutorSubjectId + " not found"));
-
-        // Validate proficiency level if provided
-        if (updateDTO.getProficiencyLevel() < 1 || updateDTO.getProficiencyLevel() > 5) {
-            throw new IllegalArgumentException(
-                    "Proficiency level must be between 1 and 5");
-        }
-
-        // Update fields
-        tutorSubject.setProficiencyLevel(updateDTO.getProficiencyLevel());
-        tutorSubject.setAvailable(updateDTO.isAvailable());
-
-        TutorSubjectEntity updatedEntity = tutorSubjectRepository.save(tutorSubject);
-        return convertToDTO(updatedEntity);
-    }
-
     // DELETE - Remove a tutor-subject association
     @Transactional
     public void deleteTutorSubject(Long tutorSubjectId) {
@@ -177,16 +116,32 @@ public class TutorSubjectService {
                 .orElse(null);
     }
 
-    // Toggle availability for a tutor-subject association
-    @Transactional
-    public TutorSubjectDTO toggleAvailability(Long tutorSubjectId) {
-        TutorSubjectEntity tutorSubject = tutorSubjectRepository.findById(tutorSubjectId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "TutorSubject with ID " + tutorSubjectId + " not found"));
-
-        tutorSubject.setAvailable(!tutorSubject.isAvailable());
-        TutorSubjectEntity updatedEntity = tutorSubjectRepository.save(tutorSubject);
-        
-        return convertToDTO(updatedEntity);
+    // Convert Entity to DTO
+    private TutorSubjectDTO convertToDTO(TutorSubjectEntity tutorSubject) {
+        return TutorSubjectDTO.builder()
+                .tutorSubjectId(tutorSubject.getTutorSubjectId())
+                .tutorId(tutorSubject.getTutor().getTutorId())
+                .subjectId(tutorSubject.getSubject().getSubjectId())
+                .subjectName(tutorSubject.getSubject().getSubjectName())
+                .proficiencyLevel(tutorSubject.getProficiencyLevel())
+                .build();
     }
+
+    // Convert DTO to Entity
+    private TutorSubjectEntity convertToEntity(CreateTutorSubjectDTO dto) {
+        TutorEntity tutor = tutorRepository.findById(dto.getTutorId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Tutor with ID " + dto.getTutorId() + " not found"));
+        
+        SubjectEntity subject = subjectRepository.findById(dto.getSubjectId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Subject with ID " + dto.getSubjectId() + " not found"));
+        
+        return TutorSubjectEntity.builder()
+                .tutor(tutor)
+                .subject(subject)
+                .proficiencyLevel(dto.getProficiencyLevel())
+                .build();
+    }
+
 }

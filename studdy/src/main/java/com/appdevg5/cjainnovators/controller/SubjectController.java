@@ -48,7 +48,7 @@ public class SubjectController {
         return ResponseEntity.ok(subjects);
     }
     
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<?> getSubjectById(@PathVariable Long id) {
         try {
             SubjectDTO subject = subjectService.getSubjectById(id);
@@ -59,7 +59,7 @@ public class SubjectController {
         }
     }
     
-    @GetMapping("/name/{name}")
+    @GetMapping("/subject-name/{name}")
     public ResponseEntity<?> getSubjectByName(@PathVariable String name) {
         try {
             SubjectDTO subject = subjectService.getSubjectByName(name);
@@ -101,21 +101,8 @@ public class SubjectController {
                 .body(Map.of("message", e.getMessage(), "success", false));
         }
     }
-    
-    @PatchMapping("/{id}")
-    public ResponseEntity<?> patchSubject(@PathVariable Long id, 
-                                         @RequestBody UpdateSubjectDTO patchDTO) {
-        try {
-            SubjectDTO updatedSubject = subjectService.patchSubject(id, patchDTO);
-            return ResponseEntity.ok(updatedSubject);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("message", e.getMessage(), "success", false));
-        }
-    }
-    
+
     // ========== DELETE ==========
-    
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteSubject(@PathVariable Long id) {
         try {

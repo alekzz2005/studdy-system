@@ -26,5 +26,4 @@ public class TutorSubjectEntity {
 
     @Column(nullable = false)
     private int proficiencyLevel; // 1 - 5 scale
-    private boolean isAvailable;
 }

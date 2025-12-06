@@ -15,9 +15,9 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:3000")
 public class SessionController {
 
+    @Autowired
     private final SessionService sessionService;
 
-    @Autowired
     public SessionController(SessionService sessionService) {
         this.sessionService = sessionService;
     }
@@ -37,7 +37,7 @@ public class SessionController {
     }
 
     // READ - Get by ID
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<?> getSessionById(@PathVariable Long id) {
         try {
             SessionDTO session = sessionService.getSessionById(id);
@@ -73,7 +73,7 @@ public class SessionController {
     }
 
     // UPDATE
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<?> updateSession(
             @PathVariable Long id,
             @RequestBody UpdateSessionDTO updateSessionDTO) {
@@ -87,7 +87,7 @@ public class SessionController {
     }
 
     // UPDATE status only
-    @PatchMapping("/{id}/status")
+    @PatchMapping("/status/{id}")
     public ResponseEntity<?> updateSessionStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> request) {
@@ -102,7 +102,7 @@ public class SessionController {
     }
 
     // UPDATE rating
-    @PatchMapping("/{id}/rating")
+    @PatchMapping("/rating/{id}")
     public ResponseEntity<?> addSessionRating(
             @PathVariable Long id,
             @RequestBody Map<String, Object> request) {
@@ -119,7 +119,7 @@ public class SessionController {
     }
 
     // DELETE
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteSession(@PathVariable Long id) {
         try {
             sessionService.deleteSession(id);

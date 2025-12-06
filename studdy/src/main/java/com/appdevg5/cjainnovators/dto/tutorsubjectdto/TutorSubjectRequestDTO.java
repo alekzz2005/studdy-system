@@ -6,5 +6,4 @@ import lombok.Data;
 public class TutorSubjectRequestDTO {
     private Long subjectId;
     private int proficiencyLevel;
-    private boolean isAvailable;
 }

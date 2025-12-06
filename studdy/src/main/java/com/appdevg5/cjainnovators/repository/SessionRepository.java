@@ -73,10 +73,4 @@ public interface SessionRepository extends JpaRepository<SessionEntity, Long> {
            "AND s.status = 'COMPLETED'")
     List<SessionEntity> findCompletedSessionsByTutorAfterDate(@Param("tutorId") Long tutorId,
                                                               @Param("startDate") LocalDate startDate);
-    
-    @Query("SELECT AVG(s.rating) FROM SessionEntity s WHERE s.tutor.tutorId = :tutorId AND s.rating IS NOT NULL")
-    Double calculateAverageRatingByTutor(@Param("tutorId") Long tutorId);
-    
-    @Query("SELECT SUM(s.duration) FROM SessionEntity s WHERE s.tutor.tutorId = :tutorId AND s.status = 'COMPLETED'")
-    Integer calculateTotalDurationByTutor(@Param("tutorId") Long tutorId);
 }

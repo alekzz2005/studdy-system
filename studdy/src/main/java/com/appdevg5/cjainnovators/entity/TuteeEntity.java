@@ -27,9 +27,5 @@ public class TuteeEntity {
     @Builder.Default
     private List<SessionEntity> sessions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "tutee", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<TuteeSubjectEntity> subjects = new ArrayList<>();
-
     private int hoursStudied;
 }
