@@ -40,12 +40,12 @@ api.interceptors.response.use(
 
 export const authAPI = {
   login: async (credentials) => {
-    const response = await api.post('/user/api/loginUser', credentials);
+    const response = await api.post('/api/users/login', credentials);
     return response.data;
   },
 
   register: async (userData) => {
-    const response = await api.post('/user/api/createUser', userData);
+    const response = await api.post('/api/users/register', userData);
     return response.data;
   },
 
@@ -55,8 +55,8 @@ export const authAPI = {
 };
 
 export const userAPI = {
-  getProfile: () => api.get('/api/user/profile'),
-  updateProfile: (userData) => api.put('/api/user/profile', userData),
+  getProfile: () => api.get('/api/users/profile'),
+  updateProfile: (userData) => api.put('/api/users/profile', userData),
 };
 
 export const fetchLandingPageStats = async () => {

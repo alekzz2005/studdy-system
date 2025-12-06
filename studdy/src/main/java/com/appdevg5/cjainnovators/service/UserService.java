@@ -106,13 +106,6 @@ public class UserService {
             .collect(Collectors.toList());
     }
     
-    // Get active users only
-    public List<UserDTO> getActiveUsers() {
-        return userRepository.findByActiveTrue().stream()
-            .map(this::convertToDTO)
-            .collect(Collectors.toList());
-    }
-    
     // Update user
     public UserDTO updateUser(Long userId, UpdateUserDTO updateUserDTO) {
         UserEntity userEntity = userRepository.findById(userId)
@@ -156,13 +149,16 @@ public class UserService {
         return convertToDTO(updatedUser);
     }
     
-    // Delete user (soft delete by setting active to false)
+    // Delete user (HARD DELETE - completely remove from database)
     public void deleteUser(Long userId) {
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
         
-        userEntity.setActive(false);
-        userRepository.save(userEntity);
+        // IMPORTANT: Delete related data first if you have foreign key constraints
+        // For example, if you have sessions, progress, etc. related to this user
+        
+        // Delete user entity (this will fail if there are foreign key constraints)
+        userRepository.delete(userEntity);
     }
     
     // Authenticate user (login)
@@ -182,7 +178,7 @@ public class UserService {
         
         return convertToDTO(userEntity);
     }
-    
+
     // Change password
     public void changePassword(Long userId, ChangePasswordDTO changePasswordDTO) {
         UserEntity userEntity = userRepository.findById(userId)
@@ -201,26 +197,6 @@ public class UserService {
         // Update password
         userEntity.setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
         userRepository.save(userEntity);
-    }
-    
-    // Reset password (admin function)
-    public void resetPassword(Long userId, String newPassword) {
-        UserEntity userEntity = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
-        
-        userEntity.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(userEntity);
-    }
-    
-    // Toggle user active status
-    public UserDTO toggleUserStatus(Long userId) {
-        UserEntity userEntity = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
-        
-        userEntity.setActive(!userEntity.isActive());
-        UserEntity updatedUser = userRepository.save(userEntity);
-        
-        return convertToDTO(updatedUser);
     }
     
     // Search users by name

@@ -10,11 +10,6 @@ import Profile from './components/pages/Profile';
 
 import './styles/index.css';
 
-/*const isAuthenticated = () => {
-  const user = localStorage.getItem('user');
-  return !!user; 
-};*/
-
 const isAuthenticated = () => {
   const user = localStorage.getItem('user');
   console.log('User in localStorage:', user);
@@ -37,16 +32,14 @@ function App() {
         <Routes>
           {/* Landing Page - Public route */}
           <Route path="/" element={<LandingPage />} />
-          
-          {/* Auth routes - temporarily remove PublicRoute */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
 
-          {/* Protected routes - temporarily remove ProtectedRoute */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/book-tutor" element={<BookTutor />} />
-          <Route path="/sessions" element={<Sessions />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/login" element={ <PublicRoute> <LoginPage /> </PublicRoute>} />
+          <Route path="/register" element={ <PublicRoute> <RegisterPage /> </PublicRoute>} />
+
+          <Route path="/dashboard" element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
+          <Route path="/book-tutor" element={<ProtectedRoute> <BookTutor /> </ProtectedRoute>} />
+          <Route path="/sessions" element={<ProtectedRoute> <Sessions /> </ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" />} />

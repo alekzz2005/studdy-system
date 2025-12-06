@@ -42,7 +42,7 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
         label="School/University"
         type="text"
         name="school"
-        placeholder="University of the Philippines"
+        placeholder="Cebu Institute of Technology - University"
         value={formData.school}
         onChange={handleChange}
         error={errors.school}
@@ -66,7 +66,7 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
           label="Major/Specialization"
           type="text"
           name="major"
-          placeholder="Computer Science"
+          placeholder="Information Technology"
           value={formData.major}
           onChange={handleChange}
           error={errors.major}
@@ -75,12 +75,12 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
 
       <Textarea
         label="Learning Goals"
-        name="learningGoals"
+        name="goals"
         placeholder="What do you want to achieve on Studdy?"
-        value={formData.learningGoals}
+        value={formData.goals}
         onChange={handleChange}
         rows={3}
-        error={errors.learningGoals}
+        error={errors.goals}
       />
     </div>
   );

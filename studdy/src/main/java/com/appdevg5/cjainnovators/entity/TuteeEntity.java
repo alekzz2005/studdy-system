@@ -32,5 +32,4 @@ public class TuteeEntity {
     private List<TuteeSubjectEntity> subjects = new ArrayList<>();
 
     private int hoursStudied;
-
 }

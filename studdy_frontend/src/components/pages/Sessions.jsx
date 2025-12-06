@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import Header from '../dashboard/Header';
 import { 
   Calendar, 
   Clock, 
@@ -15,6 +17,7 @@ import {
 import './styles/Sessions.css';
 
 const Sessions = () => {
+  const navigate = useNavigate();
   // Hardcoded data - backend friendly structure
   const stats = [
     { id: 1, label: 'Total Sessions', value: '4', icon: Calendar, color: '#1F2937' },
@@ -72,34 +75,14 @@ const Sessions = () => {
     { id: 3, label: 'Account Settings', icon: Settings, active: false }
   ];
 
+  const handleBookSession = () => {
+    navigate('/book-tutor');
+  };
+
   return (
     <div className="sessions-container">
       {/* Header */}
-      <header className="header">
-        <div className="header-content">
-          <div className="logo-section">
-            <h1 className="logo">Studdy</h1>
-            <nav className="nav-links">
-              <a href="#" className="nav-link">Home</a>
-              <a href="#" className="nav-link active">My Sessions</a>
-              <a href="#" className="nav-link">Profile</a>
-            </nav>
-          </div>
-          <div className="header-actions">
-            <button className="primary-btn">
-              <div className="btn-icon">
-                <div className="green-dot"></div>
-              </div>
-              Book a session
-            </button>
-            <div className="action-icons">
-              <MessageCircle size={16} />
-              <Bell size={16} />
-              <User size={16} />
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header onBookSession={handleBookSession} />
 
       <div className="main-layout-wrapper">
         {/* Full-height Sidebar */}

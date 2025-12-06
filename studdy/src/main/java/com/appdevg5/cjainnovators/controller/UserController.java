@@ -18,6 +18,11 @@ public class UserController {
     
     @Autowired
     private UserService userService;
+
+    @GetMapping("/test")
+    public String test() {
+        return "UserController is working!";
+    }
     
     // Register new user
     @PostMapping("/register")
@@ -164,23 +169,6 @@ public class UserController {
         }
     }
     
-    // Search users by name
-    @GetMapping("/search")
-    public ResponseEntity<?> searchUsers(@RequestParam String name) {
-        try {
-            List<UserDTO> users = userService.searchUsersByName(name);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("users", users);
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("success", false, "message", e.getMessage()));
-        }
-    }
-    
     // Check email availability
     @GetMapping("/check-email")
     public ResponseEntity<?> checkEmail(@RequestParam String email) {
@@ -191,23 +179,6 @@ public class UserController {
             response.put("success", true);
             response.put("email", email);
             response.put("available", !emailExists);
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("success", false, "message", e.getMessage()));
-        }
-    }
-    
-    // Get user statistics
-    @GetMapping("/stats")
-    public ResponseEntity<?> getUserStats() {
-        try {
-            UserService.UserStatsDTO stats = userService.getUserStats();
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("stats", stats);
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../dashboard/Header';
 import Sidebar from '../dashboard/Sidebar';
@@ -8,34 +8,134 @@ import TutorCard from '../dashboard/TutorCard';
 import StatsCard from '../dashboard/StatsCard';
 import ProgressBar from '../dashboard/ProgressBar';
 import './styles/Dashboard.css';
+import { userService } from '../../services/UserService';
+import { sessionService } from '../../services/SessionService';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   
-  // Mock data
-  const upcomingSessions = [
-    {
-      id: 1,
-      subject: 'Mathematics',
-      tutor: 'Alexander Binagatan',
-      date: 'Today • 2:00 PM - 3:00 PM',
-      status: 'confirmed'
-    },
-    {
-      id: 2,
-      subject: 'Physics',
-      tutor: 'Charry Mae Atamosa',
-      date: 'Tomorrow • 10:00 AM - 11:30 AM',
-      status: 'confirmed'
-    },
-    {
-      id: 3,
-      subject: 'Chemistry',
-      tutor: 'John Anthony Besañez',
-      date: 'Dec 15 • 4:00 PM - 5:00 PM',
-      status: 'pending'
+  // Get real user data from userService
+  const user = userService.getCurrentUser() || {};
+  
+  // State for upcoming sessions
+  const [upcomingSessions, setUpcomingSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+
+  // Get user stats with fallbacks
+  const userStats = user.stats || {
+    sessionsCompleted: 0,
+    hoursStudied: 0,
+    averageRating: 0
+  };
+
+  // Fetch upcoming sessions on component mount
+  useEffect(() => {
+    fetchUpcomingSessions();
+  }, []);
+
+  const fetchUpcomingSessions = async () => {
+    try {
+      setLoadingSessions(true);
+      // Fetch real upcoming sessions from the session service
+      const sessions = await sessionService.getUpcomingSessions();
+      
+      // Transform the data to match your SessionCard component format
+      const formattedSessions = sessions.map(session => ({
+        id: session.sessionId,
+        subject: session.subject?.name || 'General',
+        tutor: session.tutor?.name || 'Tutor',
+        date: formatSessionDate(session.sessionDate, session.startTime, session.endTime),
+        status: mapSessionStatus(session.status)
+      }));
+      
+      setUpcomingSessions(formattedSessions);
+    } catch (error) {
+      console.error('Error fetching upcoming sessions:', error);
+      // Fallback to mock data if API fails
+      setUpcomingSessions(getMockUpcomingSessions());
+    } finally {
+      setLoadingSessions(false);
     }
-  ];
+  };
+
+  // Helper function to format session date and time
+  const formatSessionDate = (dateString, startTime, endTime) => {
+    if (!dateString) return 'Date not set';
+    
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const sessionDate = new Date(dateString);
+    const formattedDate = sessionDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    // Check if session is today, tomorrow, or another day
+    const isToday = sessionDate.toDateString() === today.toDateString();
+    const isTomorrow = sessionDate.toDateString() === tomorrow.toDateString();
+    
+    let dayPrefix = '';
+    if (isToday) dayPrefix = 'Today • ';
+    else if (isTomorrow) dayPrefix = 'Tomorrow • ';
+    else dayPrefix = `${formattedDate} • `;
+    
+    // Format time
+    const formatTime = (time) => {
+      if (!time) return '';
+      const [hours, minutes] = time.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    };
+    
+    const startFormatted = formatTime(startTime);
+    const endFormatted = formatTime(endTime);
+    
+    return `${dayPrefix}${startFormatted} - ${endFormatted}`;
+  };
+
+  // Helper function to map API status to frontend status
+  const mapSessionStatus = (apiStatus) => {
+    const statusMap = {
+      'SCHEDULED': 'confirmed',
+      'CONFIRMED': 'confirmed',
+      'PENDING': 'pending',
+      'COMPLETED': 'completed',
+      'CANCELLED': 'cancelled'
+    };
+    return statusMap[apiStatus] || 'pending';
+  };
+
+  // Mock data fallback
+  const getMockUpcomingSessions = () => {
+    return [
+      {
+        id: 1,
+        subject: 'Mathematics',
+        tutor: 'Alexander Binagatan',
+        date: 'Today • 2:00 PM - 3:00 PM',
+        status: 'confirmed'
+      },
+      {
+        id: 2,
+        subject: 'Physics',
+        tutor: 'Charry Mae Atamosa',
+        date: 'Tomorrow • 10:00 AM - 11:30 AM',
+        status: 'confirmed'
+      },
+      {
+        id: 3,
+        subject: user.major || 'Chemistry',
+        tutor: 'John Anthony Besañez',
+        date: 'Dec 15 • 4:00 PM - 5:00 PM',
+        status: 'pending'
+      }
+    ];
+  };
 
   const availableTutors = [
     { id: 1, name: 'Alex Rodriguez', subject: 'Computer Science', rating: '4.9' },
@@ -51,13 +151,21 @@ const Dashboard = () => {
   ];
 
   const studyStats = [
-    { label: 'Sessions Completed', value: '20' },
-    { label: 'Hours Studied', value: '20' },
-    { label: 'Average Rating', value: '4.8' }
+    { label: 'Sessions Completed', value: userStats.sessionsCompleted.toString() },
+    { label: 'Hours Studied', value: `${userStats.hoursStudied}h` },
+    { label: 'Average Rating', value: userStats.averageRating > 0 ? userStats.averageRating.toFixed(1) : 'N/A' }
   ];
 
   const handleBookSession = () => {
     navigate('/book-tutor');
+  };
+
+  const handleViewAllTutors = () => {
+    navigate('/book-tutor');
+  };
+
+  const handleRefreshSessions = () => {
+    fetchUpcomingSessions();
   };
 
   return (
@@ -73,7 +181,7 @@ const Dashboard = () => {
           <div className="dashboard-grid">
             {/* Left Column */}
             <div className="dashboard-left">
-              {/* Upcoming Sessions */}
+              {/* Upcoming Sessions - UPDATED WITH REAL DATA */}
               <div className="dashboard-section">
                 <div className="section-header">
                   <div className="section-icon">
@@ -83,16 +191,45 @@ const Dashboard = () => {
                     <h3>Upcoming Sessions</h3>
                     <p>Your scheduled tutoring sessions</p>
                   </div>
+                  <button 
+                    className="refresh-btn"
+                    onClick={handleRefreshSessions}
+                    disabled={loadingSessions}
+                    title="Refresh sessions"
+                  >
+                    <i className={`fas fa-sync ${loadingSessions ? 'fa-spin' : ''}`}></i>
+                  </button>
                 </div>
                 
-                <div className="sessions-list">
-                  {upcomingSessions.map(session => (
-                    <SessionCard key={session.id} session={session} />
-                  ))}
-                </div>
+                {loadingSessions ? (
+                  <div className="loading-sessions">
+                    <div className="loading-spinner"></div>
+                    <p>Loading your sessions...</p>
+                  </div>
+                ) : upcomingSessions.length > 0 ? (
+                  <div className="sessions-list">
+                    {upcomingSessions.map(session => (
+                      <SessionCard key={session.id} session={session} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-sessions">
+                    <div className="no-sessions-icon">
+                      <i className="far fa-calendar-times"></i>
+                    </div>
+                    <p>No upcoming sessions scheduled</p>
+                    <button 
+                      className="btn-book-now"
+                      onClick={handleBookSession}
+                    >
+                      <i className="fas fa-calendar-plus"></i>
+                      Book Your First Session
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Available Tutors */}
+              {/* Available Tutors (unchanged) */}
               <div className="dashboard-section">
                 <div className="section-header">
                   <div className="section-title">
@@ -108,12 +245,14 @@ const Dashboard = () => {
                 </div>
                 
                 <div className="view-all-container">
-                  <button className="btn-outline">View All Tutors</button>
+                  <button className="btn-outline" onClick={handleViewAllTutors}>
+                    View All Tutors
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Right Column */}
+            {/* Right Column (unchanged) */}
             <div className="dashboard-right">
               {/* Stats Cards */}
               <div className="dashboard-section">

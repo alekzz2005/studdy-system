@@ -13,7 +13,7 @@ const AboutYou = ({ formData, onChange, errors }) => {
         label="Address"
         type="text"
         name="address"
-        placeholder="Quezon City, Metro Manila"
+        placeholder="Cebu City, Cebu"
         value={formData.address}
         onChange={onChange}
         error={errors.address}
