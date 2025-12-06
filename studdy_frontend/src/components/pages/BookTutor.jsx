@@ -6,6 +6,8 @@ import StepIndicator from '../common/StepIndicator';
 import SubjectSelection from './BookTutorSteps/SubjectSelection';
 import TutorSelection from './BookTutorSteps/TutorSelection';
 import ScheduleSession from './BookTutorSteps/ScheduleSession';
+import { sessionService } from '../../services/SessionService';
+import { userService } from '../../services/UserService';
 import './styles/BookTutor.css';
 
 const BookTutor = () => {
@@ -33,6 +35,7 @@ const BookTutor = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
+        // Fetch subjects from API (mock for now)
         const mockSubjects = [
           { subjectId: 1, name: 'Mathematics', category: 'Science' },
           { subjectId: 2, name: 'Physics', category: 'Science' },
@@ -42,6 +45,7 @@ const BookTutor = () => {
         ];
         setSubjects(mockSubjects);
 
+        // Fetch tutors from API (mock for now)
         const mockTutors = [
           { userId: 1, name: 'John Smith', expertise: ['Mathematics', 'Physics'], rating: 4.8 },
           { userId: 2, name: 'Sarah Johnson', expertise: ['English Literature'], rating: 4.9 },
@@ -67,14 +71,8 @@ const BookTutor = () => {
   const fetchAvailableSlots = async (tutorId, date) => {
     setIsLoading(true);
     try {
-      const mockSlots = [
-        { startTime: '09:00', endTime: '10:00', available: true },
-        { startTime: '10:30', endTime: '11:30', available: true },
-        { startTime: '14:00', endTime: '15:00', available: true },
-        { startTime: '15:30', endTime: '16:30', available: false },
-        { startTime: '17:00', endTime: '18:00', available: true }
-      ];
-      setAvailableSlots(mockSlots);
+      const slots = await sessionService.getAvailableSlots(tutorId, date);
+      setAvailableSlots(slots);
     } catch (error) {
       console.error('Error fetching available slots:', error);
       setErrors({ slots: 'Failed to load available time slots' });
@@ -89,6 +87,7 @@ const BookTutor = () => {
       [name]: value
     }));
 
+    // Reset dependent fields when parent field changes
     if (name === 'subjectId') {
       setFormData(prev => ({ 
         ...prev, 
@@ -97,6 +96,7 @@ const BookTutor = () => {
         startTime: '', 
         endTime: '' 
       }));
+      setAvailableSlots([]);
     } else if (name === 'tutorId') {
       setFormData(prev => ({ 
         ...prev, 
@@ -104,8 +104,16 @@ const BookTutor = () => {
         startTime: '', 
         endTime: '' 
       }));
+      setAvailableSlots([]);
+    } else if (name === 'sessionDate') {
+      setFormData(prev => ({ 
+        ...prev, 
+        startTime: '', 
+        endTime: '' 
+      }));
     }
 
+    // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -147,23 +155,44 @@ const BookTutor = () => {
       if (validateStep(step)) {
         setIsLoading(true);
         try {
+          // Get current user ID
+          const currentUser = userService.getCurrentUser();
+          if (!currentUser || !currentUser.userId) {
+            throw new Error('Please log in to book a session');
+          }
+
+          // Calculate duration in minutes
+          const [startHour, startMinute] = formData.startTime.split(':').map(Number);
+          const [endHour, endMinute] = formData.endTime.split(':').map(Number);
+          const duration = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+
+          // Prepare session data
           const sessionData = {
             tutorId: parseInt(formData.tutorId),
-            tuteeId: 1,
+            tuteeId: currentUser.userId,
             subjectId: parseInt(formData.subjectId),
             sessionDate: formData.sessionDate,
             startTime: formData.startTime,
             endTime: formData.endTime,
+            duration: duration,
             status: 'SCHEDULED'
           };
 
-          console.log('Booking session:', sessionData);
+          console.log('Booking session with data:', sessionData);
           
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Call session service to book session
+          const result = await sessionService.bookSession(sessionData);
           
+          console.log('Session booked successfully:', result);
+          
+          // Show success message
+          alert(`Session booked successfully! You'll receive a confirmation email.`);
+          
+          // Navigate to dashboard
           navigate('/dashboard');
           
         } catch (error) {
+          console.error('Booking error:', error);
           setErrors({ 
             submit: error.response?.data?.message || error.message || 'Booking failed. Please try again.' 
           });
@@ -186,8 +215,10 @@ const BookTutor = () => {
     if (!formData.subjectId) return [];
     
     const selectedSubject = subjects.find(sub => sub.subjectId === parseInt(formData.subjectId));
+    if (!selectedSubject) return [];
+    
     return tutors.filter(tutor => 
-      tutor.expertise.includes(selectedSubject?.name)
+      tutor.expertise.includes(selectedSubject.name)
     );
   };
 
@@ -244,6 +275,7 @@ const BookTutor = () => {
               variant="secondary" 
               onClick={handleBack} 
               fullWidth={true}
+              disabled={isLoading}
             >
               {step === 1 ? 'Back to Dashboard' : 'Back'}
             </Button>
@@ -253,8 +285,9 @@ const BookTutor = () => {
               variant="primary" 
               fullWidth={true}
               disabled={isLoading}
+              loading={isLoading}
             >
-              {isLoading ? 'Processing...' : step === 3 ? 'Confirm Booking' : 'Next'}
+              {step === 3 ? 'Confirm Booking' : 'Next'}
             </Button>
           </div>
         </div>

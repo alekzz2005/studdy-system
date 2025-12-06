@@ -24,7 +24,7 @@ const RegisterPage = () => {
     major: '',
     address: '',
     bio: '',
-    learningGoals: ''
+    goals: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +92,7 @@ const RegisterPage = () => {
         try {
           const response = await authAPI.register(formData);
           console.log('Registration successful:', response);
-          navigate('/');
+          navigate('/login');
         } catch (error) {
           setErrors({ submit: error.response?.data?.message || error.message || 'Registration failed' });
         } finally {
