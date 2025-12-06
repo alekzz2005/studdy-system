@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchLandingPageStats } from '../../services/api';
 import './styles/LandingPage.css';
 
 import Header from '../landing/HeaderSection';

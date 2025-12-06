@@ -7,7 +7,7 @@ import StepIndicator from '../common/StepIndicator';
 import BasicInfo from './RegisterSteps/BasicInfo';
 import AcademicInfo from './RegisterSteps/AcademicInfo';
 import AboutYou from './RegisterSteps/AboutYou';
-import { authAPI } from '../../services/api';
+import { authAPI } from '../../services/auth';
 
 const RegisterPage = () => {
   const [step, setStep] = useState(1);

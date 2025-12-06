@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -41,7 +42,6 @@ public class UserService {
             .school(user.getSchool())
             .gradeLevel(user.getGradeLevel())
             .major(user.getMajor())
-            .goals(user.getGoals())
             .active(user.isActive())
             .build();
     }
@@ -60,26 +60,21 @@ public class UserService {
             .school(dto.getSchool())
             .gradeLevel(dto.getGradeLevel())
             .major(dto.getMajor())
-            .goals(dto.getGoals())
             .active(true) // Default to active
             .build();
     }
     
     // Create new user
     public UserDTO createUser(CreateUserDTO createUserDTO) {
-        // Check if email already exists
         Optional<UserEntity> existingUser = userRepository.findByEmail(createUserDTO.getEmail());
         if (existingUser.isPresent()) {
             throw new RuntimeException("Email already exists: " + createUserDTO.getEmail());
         }
         
-        // Convert DTO to Entity
         UserEntity userEntity = convertToEntity(createUserDTO);
         
-        // Save user
         UserEntity savedUser = userRepository.save(userEntity);
         
-        // Convert back to DTO and return
         return convertToDTO(savedUser);
     }
     
@@ -94,7 +89,7 @@ public class UserService {
     // Get user by email
     public UserDTO getUserByEmail(String email) {
         UserEntity userEntity = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NoSuchElementException("User not found with email: " + email));
+            .orElseThrow(() -> new RuntimeException("User not found"));
         
         return convertToDTO(userEntity);
     }
@@ -139,9 +134,6 @@ public class UserService {
         if (updateUserDTO.getMajor() != null) {
             userEntity.setMajor(updateUserDTO.getMajor());
         }
-        if (updateUserDTO.getGoals() != null) {
-            userEntity.setGoals(updateUserDTO.getGoals());
-        }
         
         userEntity.setActive(updateUserDTO.isActive());
         
@@ -149,15 +141,11 @@ public class UserService {
         return convertToDTO(updatedUser);
     }
     
-    // Delete user (HARD DELETE - completely remove from database)
+    // Delete user
     public void deleteUser(Long userId) {
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
-        
-        // IMPORTANT: Delete related data first if you have foreign key constraints
-        // For example, if you have sessions, progress, etc. related to this user
-        
-        // Delete user entity (this will fail if there are foreign key constraints)
+            
         userRepository.delete(userEntity);
     }
     
@@ -238,6 +226,12 @@ public class UserService {
             .activeUsers(activeUsers)
             .inactiveUsers(totalUsers - activeUsers)
             .build();
+    }
+
+    public String generateToken(UserDTO user) {
+        // Simple base64 token for testing
+        String tokenData = user.getUserId() + ":" + user.getEmail() + ":" + System.currentTimeMillis();
+        return Base64.getEncoder().encodeToString(tokenData.getBytes());
     }
     
     // Inner DTO for statistics

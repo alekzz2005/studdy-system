@@ -11,10 +11,8 @@ import Profile from './components/pages/Profile';
 import './styles/index.css';
 
 const isAuthenticated = () => {
-  const user = localStorage.getItem('user');
-  console.log('User in localStorage:', user);
-  console.log('Is authenticated:', !!user);
-  return !!user; 
+  const token = localStorage.getItem('authToken');
+  return !!token;
 };
 
 const ProtectedRoute = ({ children }) => {

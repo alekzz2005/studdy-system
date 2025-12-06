@@ -41,7 +41,7 @@ public class TutorSubjectController {
     }
 
     // READ - Get by ID
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<?> getTutorSubjectById(@PathVariable Long id) {
         try {
             TutorSubjectDTO tutorSubject = tutorSubjectService.getTutorSubjectById(id);
@@ -53,39 +53,19 @@ public class TutorSubjectController {
     }
 
     // READ - Get by tutor ID
-    @GetMapping("/tutor/{tutorId}")
+    @GetMapping("/get-tutor/{tutorId}")
     public ResponseEntity<List<TutorSubjectDTO>> getSubjectsByTutorId(@PathVariable Long tutorId) {
         return ResponseEntity.ok(tutorSubjectService.getSubjectsByTutorId(tutorId));
     }
 
     // READ - Get by subject ID
-    @GetMapping("/subject/{subjectId}")
+    @GetMapping("/get-subject/{subjectId}")
     public ResponseEntity<List<TutorSubjectDTO>> getTutorsBySubjectId(@PathVariable Long subjectId) {
         return ResponseEntity.ok(tutorSubjectService.getTutorsBySubjectId(subjectId));
     }
 
-    // READ - Get available tutors for subject
-    @GetMapping("/subject/{subjectId}/available")
-    public ResponseEntity<List<TutorSubjectDTO>> getAvailableTutorsBySubject(@PathVariable Long subjectId) {
-        return ResponseEntity.ok(tutorSubjectService.getAvailableTutorsBySubject(subjectId));
-    }
-
-    // UPDATE
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateTutorSubject(
-            @PathVariable Long id, 
-            @RequestBody UpdateTutorSubjectDTO updateDTO) {
-        try {
-            TutorSubjectDTO updated = tutorSubjectService.updateTutorSubject(id, updateDTO);
-            return ResponseEntity.ok(updated);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("message", e.getMessage()));
-        }
-    }
-
     // DELETE
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete-tutor/{id}")
     public ResponseEntity<?> deleteTutorSubject(@PathVariable Long id) {
         try {
             tutorSubjectService.deleteTutorSubject(id);
@@ -93,18 +73,6 @@ public class TutorSubjectController {
                 "message", "Tutor-subject association deleted successfully",
                 "success", true
             ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("message", e.getMessage()));
-        }
-    }
-
-    // Toggle availability
-    @PatchMapping("/{id}/toggle-availability")
-    public ResponseEntity<?> toggleAvailability(@PathVariable Long id) {
-        try {
-            TutorSubjectDTO updated = tutorSubjectService.toggleAvailability(id);
-            return ResponseEntity.ok(updated);
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", e.getMessage()));

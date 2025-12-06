@@ -22,6 +22,5 @@ public class UserDTO {
     private String school;
     private int gradeLevel;
     private String major;
-    private String goals;
     private boolean active;
 }

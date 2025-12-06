@@ -38,7 +38,10 @@ public class UserEntity {
     private String school;
     private int gradeLevel;
     private String major;
-    private String goals;
+
+    private LocalDate dateStarted;
+
+    private String type; //Tutee or Tutor
     
     @Column(name = "is_active")
     private boolean active;
@@ -51,8 +54,8 @@ public class UserEntity {
     
     public UserEntity(String firstName, String lastName, String email, String password, 
                      String phoneNumber, LocalDate dateOfBirth, String address, 
-                     String bio, String school, int gradeLevel, String major,
-                     String goals, boolean active) {
+                     String bio, String school, int gradeLevel, String major, 
+                     LocalDate dateStarted, String type ,boolean active) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -64,7 +67,8 @@ public class UserEntity {
         this.school = school;
         this.gradeLevel = gradeLevel;
         this.major = major;
-        this.goals = goals;
+        this.dateStarted = dateStarted;
+        this.type = type;
         this.active = active;
     }
 }

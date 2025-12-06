@@ -13,10 +13,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateSessionDTO {
+    private String goal;
+    private String medium;
+    private Integer duration;
     private LocalDate sessionDate;
     private LocalTime startTime;
     private LocalTime endTime;
-    private Integer duration;
     private String status;
     private Float rating;
     private String feedback;

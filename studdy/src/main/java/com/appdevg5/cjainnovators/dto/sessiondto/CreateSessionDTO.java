@@ -16,8 +16,11 @@ public class CreateSessionDTO {
     private Long tutorId;
     private Long tuteeId;
     private Long subjectId;
+    private String goal;
+    private String medium;
+    private Integer duration;
     private LocalDate sessionDate;
     private LocalTime startTime;
-    private Integer duration;
+    private LocalTime endTime;
     private String status;
 }

@@ -30,15 +30,16 @@ public class SessionEntity {
     @ManyToOne
     @JoinColumn(name = "subject_id", nullable = false)
     private SubjectEntity subject;
-    
-    @OneToOne(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ProgressEntity progress;
 
+    private String goal;
+    private String medium;
+    private int duration;
     private LocalDate sessionDate;
     private LocalTime startTime;
     private LocalTime endTime;
-    private int duration;
-    private String status;
+    private String status; //Pending, Accepted, Ongoing, Completed, Cancelled
+
+    // Optionals
     private Float rating;
     private String feedback;
 }

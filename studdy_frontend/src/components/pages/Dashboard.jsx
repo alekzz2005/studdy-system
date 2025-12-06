@@ -8,25 +8,35 @@ import TutorCard from '../dashboard/TutorCard';
 import StatsCard from '../dashboard/StatsCard';
 import ProgressBar from '../dashboard/ProgressBar';
 import './styles/Dashboard.css';
-import { userService } from '../../services/UserService';
-import { sessionService } from '../../services/SessionService';
+import { userAPI } from '../../services/user';
+import { sessionService } from '../../services/session';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   
-  // Get real user data from userService
-  const user = userService.getCurrentUser() || {};
+  const [currentUser, setCurrentUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    
+    useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await userAPI.getCurrentUser();
+        if (response.success) {
+          setCurrentUser(response.user);
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+  
   
   // State for upcoming sessions
   const [upcomingSessions, setUpcomingSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
-
-  // Get user stats with fallbacks
-  const userStats = user.stats || {
-    sessionsCompleted: 0,
-    hoursStudied: 0,
-    averageRating: 0
-  };
 
   // Fetch upcoming sessions on component mount
   useEffect(() => {
@@ -129,7 +139,7 @@ const Dashboard = () => {
       },
       {
         id: 3,
-        subject: user.major || 'Chemistry',
+        subject: currentUser.major || 'Chemistry',
         tutor: 'John Anthony Besañez',
         date: 'Dec 15 • 4:00 PM - 5:00 PM',
         status: 'pending'
@@ -148,12 +158,6 @@ const Dashboard = () => {
     { subject: 'Mathematics', percentage: 85 },
     { subject: 'Physics', percentage: 72 },
     { subject: 'Chemistry', percentage: 90 }
-  ];
-
-  const studyStats = [
-    { label: 'Sessions Completed', value: userStats.sessionsCompleted.toString() },
-    { label: 'Hours Studied', value: `${userStats.hoursStudied}h` },
-    { label: 'Average Rating', value: userStats.averageRating > 0 ? userStats.averageRating.toFixed(1) : 'N/A' }
   ];
 
   const handleBookSession = () => {
@@ -255,14 +259,7 @@ const Dashboard = () => {
             {/* Right Column (unchanged) */}
             <div className="dashboard-right">
               {/* Stats Cards */}
-              <div className="dashboard-section">
-                <h3 className="section-title">This Month</h3>
-                <div className="stats-cards">
-                  {studyStats.map((stat, index) => (
-                    <StatsCard key={index} stat={stat} />
-                  ))}
-                </div>
-              </div>
+              
 
               {/* Study Progress */}
               <div className="dashboard-section">

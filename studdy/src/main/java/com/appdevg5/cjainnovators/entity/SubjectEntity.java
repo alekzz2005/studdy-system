@@ -22,10 +22,6 @@ public class SubjectEntity {
     @Builder.Default
     private List<TutorSubjectEntity> tutorSubjects = new ArrayList<>();
 
-    @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<TuteeSubjectEntity> tuteeSubjects = new ArrayList<>();
-
     @OneToMany(mappedBy = "subject")
     @Builder.Default
     private List<SessionEntity> sessions = new ArrayList<>();
@@ -35,7 +31,4 @@ public class SubjectEntity {
 
     @Column(nullable = false)
     private String subjectDesc;
-
-    @Column(nullable = false)
-    private String topics; //JSON array of strings, comma separated, or separate table
 }

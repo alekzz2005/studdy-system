@@ -18,8 +18,6 @@ public interface TutorSubjectRepository extends JpaRepository<TutorSubjectEntity
     
     List<TutorSubjectEntity> findBySubject_SubjectId(Long subjectId);
     
-    List<TutorSubjectEntity> findByIsAvailableTrue();
-    
     Optional<TutorSubjectEntity> findByTutor_TutorIdAndSubject_SubjectId(Long tutorId, Long subjectId);
 
     boolean existsByTutor_TutorIdAndSubject_SubjectId(Long tutorId, Long subjectId);
@@ -27,14 +25,6 @@ public interface TutorSubjectRepository extends JpaRepository<TutorSubjectEntity
     @Query("SELECT ts FROM TutorSubjectEntity ts WHERE ts.tutor.tutorId = :tutorId AND ts.proficiencyLevel >= :minLevel")
     List<TutorSubjectEntity> findByTutorIdAndMinProficiency(@Param("tutorId") Long tutorId, 
                                                             @Param("minLevel") int minLevel);
-    
-    @Query("SELECT ts FROM TutorSubjectEntity ts WHERE ts.subject.subjectName = :subjectName AND ts.isAvailable = true")
-    List<TutorSubjectEntity> findAvailableBySubjectName(@Param("subjectName") String subjectName);
-    
-    @Query("SELECT ts FROM TutorSubjectEntity ts " +
-           "WHERE ts.tutor.user.active = true " +
-           "AND ts.isAvailable = true")
-    List<TutorSubjectEntity> findAllAvailable();
     
     @Transactional
     @Modifying
@@ -44,13 +34,4 @@ public interface TutorSubjectRepository extends JpaRepository<TutorSubjectEntity
     @Query("SELECT COUNT(ts) FROM TutorSubjectEntity ts WHERE ts.subject.subjectId = :subjectId")
     Long countBySubjectId(@Param("subjectId") Long subjectId);
     
-    @Query("SELECT ts FROM TutorSubjectEntity ts " +
-           "WHERE ts.tutor.user.school = :school " +
-           "AND ts.subject.subjectName = :subjectName " +
-           "AND ts.isAvailable = true")
-    List<TutorSubjectEntity> findBySchoolAndSubject(@Param("school") String school, 
-                                                    @Param("subjectName") String subjectName);
-    
-    @Query("SELECT DISTINCT ts.subject.subjectName FROM TutorSubjectEntity ts WHERE ts.isAvailable = true")
-    List<String> findDistinctAvailableSubjectNames();
 }

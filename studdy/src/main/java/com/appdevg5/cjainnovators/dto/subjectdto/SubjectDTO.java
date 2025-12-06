@@ -7,5 +7,4 @@ public class SubjectDTO {
     private Long subjectId;
     private String subjectName;
     private String subjectDesc;
-    private String topics; // JSON string or comma-separated
 }

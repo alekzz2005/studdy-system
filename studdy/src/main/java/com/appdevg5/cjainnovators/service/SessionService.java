@@ -16,12 +16,18 @@ import java.util.stream.Collectors;
 @Transactional
 public class SessionService {
 
+    @Autowired
     private final SessionRepository sessionRepository;
+    
+    @Autowired
     private final TutorRepository tutorRepository;
+    
+    @Autowired
     private final TuteeRepository tuteeRepository;
+    
+    @Autowired
     private final SubjectRepository subjectRepository;
 
-    @Autowired
     public SessionService(
             SessionRepository sessionRepository,
             TutorRepository tutorRepository,

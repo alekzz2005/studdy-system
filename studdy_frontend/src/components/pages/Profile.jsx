@@ -3,35 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../dashboard/Header';
 import './styles/Profile.css';
 import Sidebar from '../dashboard/Sidebar';
-import { userService } from 'C:/Users/John Anthony/studdy-system/studdy_frontend/src/services/UserService.jsx';
+import { userAPI, userHelpers } from '../../services/user';
+import { authAPI } from '../../services/auth';
 
 const Profile = () => {
   const navigate = useNavigate();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   
-  // Get user data from userService
-  const user = userService.getCurrentUser() || {};
-  
-  const [userData] = useState({
-    firstName: user.firstName || user.name?.split(' ')[0] || "User",
-    lastName: user.lastName || user.name?.split(' ')[1] || "",
-    email: user.email || "No email provided",
-    phoneNumber: user.phoneNumber || "Not provided",
-    address: user.address || "Not provided",
-    dateOfBirth: user.dateOfBirth || "Not provided",
-    bio: user.bio || "No bio provided",
-    school: user.school || "Not provided",
-    gradeLevel: user.gradeLevel || "Not specified",
-    major: user.major || "Not specified",
-    goals: user.goals || "No goals set",
-    avatar: user.avatar || "",
-    role: user.role || "Student",
-    stats: user.stats || {
-      sessionsCompleted: 0,
-      hoursStudied: 0,
-      averageRating: 0
-    }
-  });
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await userAPI.getCurrentUser();
+        if (response.success) {
+          setCurrentUser(response.user);
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
 
   const [notificationSettings, setNotificationSettings] = useState({
     upcomingSessions: true,
@@ -46,25 +41,13 @@ const Profile = () => {
     }));
   };
 
-  // Format date for display
   const formatDate = (dateString) => {
     if (!dateString || dateString === "Not provided") return '';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    } catch {
-      return dateString;
-    }
+    return dateString;
   };
 
-  // Format phone number
   const formatPhone = (phone) => {
-    if (!phone || phone === "Not provided") return phone;
-    return phone;
+    return phone || "Not provided";
   };
 
   const handleChangePassword = () => {
@@ -72,36 +55,23 @@ const Profile = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm("Are you sure you want to delete your account? This action cannot be undone.\n\nAll your data will be permanently deleted from our database.")) {
+    if (!currentUser?.userId) return;
+    
+    if (!window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
       return;
     }
 
     setIsDeleting(true);
     try {
-      // Delete from database
-      const result = await userService.deleteAccount();
-      
-      alert('Your account has been successfully deleted from our database.');
-      navigate('/login');
-      
-    } catch (error) {
-      console.error('Error deleting account from database:', error);
-      
-      // Ask if user wants to delete from localStorage only
-      const shouldDeleteLocal = window.confirm(
-        `Failed to delete account from database: ${error.message}\n\n` +
-        'Would you like to remove your account data from this device only?'
-      );
-      
-      if (shouldDeleteLocal) {
-        try {
-          userService.deleteAccountLocal();
-          alert('Account data removed from this device.');
-          navigate('/login');
-        } catch (localError) {
-          alert('Failed to remove local data: ' + localError.message);
-        }
+      const result = await userAPI.deleteUser(currentUser.userId);
+      if (result.success) {
+        authAPI.logout();
+        alert('Account deleted successfully.');
+        navigate('/login');
       }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert('Failed to delete account.');
     } finally {
       setIsDeleting(false);
     }
@@ -109,7 +79,7 @@ const Profile = () => {
 
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to logout?")) {
-      userService.clearUser();
+      authAPI.logout();
       navigate('/login');
     }
   };
@@ -118,12 +88,18 @@ const Profile = () => {
     navigate('/book-tutor');
   };
 
-  // Get initials for avatar placeholder
   const getInitials = () => {
-    const first = userData.firstName?.charAt(0) || '';
-    const last = userData.lastName?.charAt(0) || '';
+    if (!currentUser) return 'U';
+    const first = currentUser.firstName?.charAt(0) || '';
+    const last = currentUser.lastName?.charAt(0) || '';
     return (first + last).toUpperCase();
   };
+
+  if (loading) {
+    return <div className="loading">Loading profile...</div>;
+  }
+
+  const userData = currentUser || {};
 
   return (
     <div className="profile-container">
@@ -147,13 +123,13 @@ const Profile = () => {
                     <img src={userData.avatar} alt="Profile" className="avatar-image" />
                   ) : (
                     <div className="avatar-placeholder">
-                      {getInitials() || 'U'}
+                      {getInitials()}
                     </div>
                   )}
                 </div>
-                <h3>{userData.firstName} {userData.lastName}</h3>
-                <p className="role">{userData.role}</p>
-                <p className="email">{userData.email}</p>
+                <h3>{userData.firstName || ''} {userData.lastName || ''}</h3>
+                <p className="role">{userData.type || 'User'}</p>
+                <p className="email">{userData.email || 'No email'}</p>
 
                 <div className="progress-stats">
                   <h4>Learning Progress</h4>
@@ -189,19 +165,19 @@ const Profile = () => {
                     <div className="form-group">
                       <label>First Name</label>
                       <div className="readonly-field">
-                        {userData.firstName}
+                        {userData.firstName || 'Not provided'}
                       </div>
                     </div>
                     <div className="form-group">
                       <label>Last Name</label>
                       <div className="readonly-field">
-                        {userData.lastName}
+                        {userData.lastName || 'Not provided'}
                       </div>
                     </div>
                     <div className="form-group">
                       <label>Email</label>
                       <div className="readonly-field">
-                        {userData.email}
+                        {userData.email || 'Not provided'}
                       </div>
                     </div>
                     <div className="form-group">
@@ -219,13 +195,13 @@ const Profile = () => {
                     <div className="form-group full-width">
                       <label>Address</label>
                       <div className="readonly-field">
-                        {userData.address}
+                        {userData.address || 'Not provided'}
                       </div>
                     </div>
                     <div className="form-group full-width">
                       <label>Bio</label>
                       <div className="readonly-field bio-text">
-                        {userData.bio}
+                        {userData.bio || 'No bio provided'}
                       </div>
                     </div>
                   </div>
@@ -238,25 +214,19 @@ const Profile = () => {
                     <div className="form-group">
                       <label>School</label>
                       <div className="readonly-field">
-                        {userData.school}
+                        {userData.school || 'Not provided'}
                       </div>
                     </div>
                     <div className="form-group">
                       <label>Grade Level</label>
                       <div className="readonly-field">
-                        {userData.gradeLevel}
+                        {userData.gradeLevel || 'Not provided'}
                       </div>
                     </div>
                     <div className="form-group full-width">
                       <label>Major/Field of Study</label>
                       <div className="readonly-field">
-                        {userData.major}
-                      </div>
-                    </div>
-                    <div className="form-group full-width">
-                      <label>Learning Goals</label>
-                      <div className="readonly-field bio-text">
-                        {userData.goals}
+                        {userData.major || 'Not provided'}
                       </div>
                     </div>
                   </div>
@@ -324,7 +294,7 @@ const Profile = () => {
                       Change Password
                     </button>
                     <button 
-                      className="btn-logout" 
+                      className="btn-delete-account" 
                       onClick={handleLogout}
                     >
                       Logout
@@ -332,8 +302,9 @@ const Profile = () => {
                     <button 
                       className="btn-delete-account" 
                       onClick={handleDeleteAccount}
+                      disabled={isDeleting}
                     >
-                      Delete Account
+                      {isDeleting ? 'Deleting...' : 'Delete Account'}
                     </button>
                   </div>
                 </div>

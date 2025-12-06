@@ -1,6 +1,5 @@
 package com.appdevg5.cjainnovators.entity;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +31,6 @@ public class TutorEntity {
     @Builder.Default
     private List<TutorSubjectEntity> subjects = new ArrayList<>();
 
-    private LocalDate dateStarted;
     private Float averageRating;
+    private boolean isAvailable;
 }

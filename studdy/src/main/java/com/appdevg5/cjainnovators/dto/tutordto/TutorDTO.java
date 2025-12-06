@@ -19,4 +19,5 @@ public class TutorDTO {
     private List<TutorSubjectDTO> subjects;
     private int totalSessions;
     private boolean isActive;
+    private boolean available;
 }
