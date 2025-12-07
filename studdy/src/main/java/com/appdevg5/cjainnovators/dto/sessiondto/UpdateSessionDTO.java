@@ -1,8 +1,5 @@
 package com.appdevg5.cjainnovators.dto.sessiondto;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,9 +13,12 @@ public class UpdateSessionDTO {
     private String goal;
     private String medium;
     private Integer duration;
-    private LocalDate sessionDate;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private int sessionMonth;
+    private int sessionDay;
+    private int sessionYear;
+    private int startHour;
+    private int startMinute;
+    private String startAmPm;
     private String status;
     private Float rating;
     private String feedback;

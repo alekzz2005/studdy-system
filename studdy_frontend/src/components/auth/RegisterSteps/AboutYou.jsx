@@ -18,19 +18,19 @@ const AboutYou = ({ formData, onChange, errors }) => {
           </div>
         </label>
         <select
-          name="userType"
-          value={formData.userType || ''}
+          name="type"
+          value={formData.type || ''}
           onChange={onChange}
-          className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition ${
-            errors.userType ? 'border-red-500' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${
+            errors.type ? 'border-red-500' : 'border-gray-300'
           }`}
         >
           <option value="">Select your primary role</option>
           <option value="tutor">Tutor</option>
           <option value="tutee">Tutee</option>
         </select>
-        {errors.userType && (
-          <p className="text-sm text-red-600 mt-1">{errors.userType}</p>
+        {errors.type && (
+          <p className="text-sm text-red-600 mt-1">{errors.type}</p>
         )}
       </div>
 

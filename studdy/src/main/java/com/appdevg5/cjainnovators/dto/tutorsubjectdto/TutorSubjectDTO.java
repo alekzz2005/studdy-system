@@ -15,5 +15,4 @@ public class TutorSubjectDTO {
     private Long subjectId;
     private String subjectName;
     private String subjectDesc;
-    private int proficiencyLevel; // 1-5 scale
 }

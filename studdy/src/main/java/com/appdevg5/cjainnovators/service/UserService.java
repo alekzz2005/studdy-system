@@ -1,5 +1,7 @@
 package com.appdevg5.cjainnovators.service;
 
+import com.appdevg5.cjainnovators.dto.tuteedto.CreateTuteeDTO;
+import com.appdevg5.cjainnovators.dto.tutordto.CreateTutorDTO;
 import com.appdevg5.cjainnovators.dto.userdto.*;
 import com.appdevg5.cjainnovators.entity.UserEntity;
 import com.appdevg5.cjainnovators.repository.UserRepository;
@@ -12,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -24,6 +27,12 @@ public class UserService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private TutorService tutorService;
+
+    @Autowired
+    private TuteeService tuteeService;
     
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -42,6 +51,8 @@ public class UserService {
             .school(user.getSchool())
             .gradeLevel(user.getGradeLevel())
             .major(user.getMajor())
+            .dateStarted(user.getDateStarted())
+            .type(user.getType())
             .active(user.isActive())
             .build();
     }
@@ -60,6 +71,8 @@ public class UserService {
             .school(dto.getSchool())
             .gradeLevel(dto.getGradeLevel())
             .major(dto.getMajor())
+            .type(dto.getType())
+            .dateStarted(dto.getDateStarted())
             .active(true) // Default to active
             .build();
     }
@@ -72,8 +85,14 @@ public class UserService {
         }
         
         UserEntity userEntity = convertToEntity(createUserDTO);
-        
         UserEntity savedUser = userRepository.save(userEntity);
+
+        // Automatically create tutor/tutee profile based on user type
+        if ("TUTOR".equalsIgnoreCase(savedUser.getType())) {
+            createTutorProfile(savedUser.getUserId());
+        } else if ("TUTEE".equalsIgnoreCase(savedUser.getType())) {
+            createTuteeProfile(savedUser.getUserId());
+        }
         
         return convertToDTO(savedUser);
     }
@@ -234,6 +253,19 @@ public class UserService {
         return Base64.getEncoder().encodeToString(tokenData.getBytes());
     }
     
+    private void createTutorProfile(Long userId) {
+        CreateTutorDTO tutorDTO = new CreateTutorDTO();
+        tutorDTO.setUserId(userId);
+        // Set default subjects or empty list
+        tutorDTO.setSubjects(new ArrayList<>());
+        tutorService.createTutor(tutorDTO);
+    }
+
+    private void createTuteeProfile(Long userId) {
+        CreateTuteeDTO tuteeDTO = new CreateTuteeDTO();
+        tuteeDTO.setUserId(userId);
+        tuteeService.createTutee(tuteeDTO);
+    }
     // Inner DTO for statistics
     @Data
     @Builder

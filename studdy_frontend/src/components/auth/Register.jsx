@@ -27,8 +27,7 @@ const RegisterPage = () => {
     address: '',
     bio: '',
     goals: '',
-    userType: '', // 'tutor' or 'tutee'
-    tutorSubjects: [] // Array of subject IDs
+    type: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);

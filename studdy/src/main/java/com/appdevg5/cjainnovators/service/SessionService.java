@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -54,21 +53,22 @@ public class SessionService {
                 .orElseThrow(() -> new NoSuchElementException(
                         "Subject not found with ID: " + createSessionDTO.getSubjectId()));
 
-        // Calculate end time
-        LocalTime endTime = createSessionDTO.getStartTime()
-                .plusMinutes(createSessionDTO.getDuration());
-
         // Create session entity
         SessionEntity session = SessionEntity.builder()
                 .tutor(tutor)
                 .tutee(tutee)
                 .subject(subject)
-                .sessionDate(createSessionDTO.getSessionDate())
-                .startTime(createSessionDTO.getStartTime())
-                .endTime(endTime)
+                .goal(createSessionDTO.getGoal())
+                .medium(createSessionDTO.getMedium())
                 .duration(createSessionDTO.getDuration())
+                .sessionMonth(createSessionDTO.getSessionMonth())
+                .sessionDay(createSessionDTO.getSessionDay())
+                .sessionYear(createSessionDTO.getSessionYear())
+                .startHour(createSessionDTO.getStartHour())
+                .startMinute(createSessionDTO.getStartMinute())
+                .startAmPm(createSessionDTO.getStartAmPm())
                 .status(createSessionDTO.getStatus() != null ? 
-                        createSessionDTO.getStatus() : "SCHEDULED")
+                        createSessionDTO.getStatus() : "Pending")
                 .rating(null)
                 .feedback(null)
                 .build();
@@ -123,6 +123,20 @@ public class SessionService {
                 .collect(Collectors.toList());
     }
 
+    public List<SessionDTO> getSessionsByDate(int year, int month, int day) {
+        List<SessionEntity> sessions = sessionRepository.findBySessionYearAndSessionMonthAndSessionDay(year, month, day);
+        return sessions.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<SessionDTO> getSessionsByMonth(int year, int month) {
+        List<SessionEntity> sessions = sessionRepository.findBySessionYearAndSessionMonth(year, month);
+        return sessions.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     // ========== UPDATE ==========
     public SessionDTO updateSession(Long sessionId, UpdateSessionDTO updateSessionDTO) {
         SessionEntity session = sessionRepository.findById(sessionId)
@@ -130,28 +144,40 @@ public class SessionService {
                         "Session not found with ID: " + sessionId));
 
         // Update fields if provided
-        if (updateSessionDTO.getSessionDate() != null) {
-            session.setSessionDate(updateSessionDTO.getSessionDate());
+        if (updateSessionDTO.getGoal() != null) {
+            session.setGoal(updateSessionDTO.getGoal());
         }
 
-        if (updateSessionDTO.getStartTime() != null) {
-            session.setStartTime(updateSessionDTO.getStartTime());
-            
-            // Recalculate end time if duration is provided
-            if (updateSessionDTO.getDuration() != null) {
-                session.setEndTime(updateSessionDTO.getStartTime()
-                        .plusMinutes(updateSessionDTO.getDuration()));
-                session.setDuration(updateSessionDTO.getDuration());
-            }
-        } else if (updateSessionDTO.getDuration() != null) {
-            // Update duration and recalculate end time
+        if (updateSessionDTO.getMedium() != null) {
+            session.setMedium(updateSessionDTO.getMedium());
+        }
+
+        if (updateSessionDTO.getDuration() != null) {
             session.setDuration(updateSessionDTO.getDuration());
-            session.setEndTime(session.getStartTime()
-                    .plusMinutes(updateSessionDTO.getDuration()));
         }
 
-        if (updateSessionDTO.getEndTime() != null) {
-            session.setEndTime(updateSessionDTO.getEndTime());
+        if (updateSessionDTO.getSessionMonth() != 0) {
+            session.setSessionMonth(updateSessionDTO.getSessionMonth());
+        }
+
+        if (updateSessionDTO.getSessionDay() != 0) {
+            session.setSessionDay(updateSessionDTO.getSessionDay());
+        }
+
+        if (updateSessionDTO.getSessionYear() != 0) {
+            session.setSessionYear(updateSessionDTO.getSessionYear());
+        }
+
+        if (updateSessionDTO.getStartHour() != 0) {
+            session.setStartHour(updateSessionDTO.getStartHour());
+        }
+
+        if (updateSessionDTO.getStartMinute() != 0) {
+            session.setStartMinute(updateSessionDTO.getStartMinute());
+        }
+
+        if (updateSessionDTO.getStartAmPm() != null) {
+            session.setStartAmPm(updateSessionDTO.getStartAmPm());
         }
 
         if (updateSessionDTO.getStatus() != null) {
@@ -197,7 +223,7 @@ public class SessionService {
         }
 
         // Only allow rating if session is completed
-        if (!"COMPLETED".equalsIgnoreCase(session.getStatus())) {
+        if (!"Completed".equalsIgnoreCase(session.getStatus())) {
             throw new IllegalStateException("Cannot rate a session that is not completed");
         }
 
@@ -222,10 +248,15 @@ public class SessionService {
                 .tutorId(session.getTutor() != null ? session.getTutor().getTutorId() : null)
                 .tuteeId(session.getTutee() != null ? session.getTutee().getTuteeId() : null)
                 .subjectId(session.getSubject() != null ? session.getSubject().getSubjectId() : null)
-                .sessionDate(session.getSessionDate())
-                .startTime(session.getStartTime())
-                .endTime(session.getEndTime())
+                .goal(session.getGoal())
+                .medium(session.getMedium())
                 .duration(session.getDuration())
+                .sessionMonth(session.getSessionMonth())
+                .sessionDay(session.getSessionDay())
+                .sessionYear(session.getSessionYear())
+                .startHour(session.getStartHour())
+                .startMinute(session.getStartMinute())
+                .startAmPm(session.getStartAmPm())
                 .status(session.getStatus())
                 .rating(session.getRating())
                 .feedback(session.getFeedback())

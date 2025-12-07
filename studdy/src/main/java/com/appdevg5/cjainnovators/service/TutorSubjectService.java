@@ -37,12 +37,6 @@ public class TutorSubjectService {
                     "Tutor is already associated with this subject");
         }
 
-        // Validate proficiency level
-        if (createDTO.getProficiencyLevel() < 1 || createDTO.getProficiencyLevel() > 5) {
-            throw new IllegalArgumentException(
-                    "Proficiency level must be between 1 and 5");
-        }
-
         TutorSubjectEntity tutorSubject = convertToEntity(createDTO);
         TutorSubjectEntity savedEntity = tutorSubjectRepository.save(tutorSubject);
         
@@ -109,13 +103,6 @@ public class TutorSubjectService {
                 tutorId, subjectId);
     }
 
-    // Get tutor's proficiency level for a subject
-    public Integer getProficiencyLevel(Long tutorId, Long subjectId) {
-        return tutorSubjectRepository.findByTutor_TutorIdAndSubject_SubjectId(tutorId, subjectId)
-                .map(TutorSubjectEntity::getProficiencyLevel)
-                .orElse(null);
-    }
-
     // Convert Entity to DTO
     private TutorSubjectDTO convertToDTO(TutorSubjectEntity tutorSubject) {
         return TutorSubjectDTO.builder()
@@ -123,7 +110,6 @@ public class TutorSubjectService {
                 .tutorId(tutorSubject.getTutor().getTutorId())
                 .subjectId(tutorSubject.getSubject().getSubjectId())
                 .subjectName(tutorSubject.getSubject().getSubjectName())
-                .proficiencyLevel(tutorSubject.getProficiencyLevel())
                 .build();
     }
 
@@ -140,7 +126,6 @@ public class TutorSubjectService {
         return TutorSubjectEntity.builder()
                 .tutor(tutor)
                 .subject(subject)
-                .proficiencyLevel(dto.getProficiencyLevel())
                 .build();
     }
 

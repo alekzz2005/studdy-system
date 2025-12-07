@@ -105,25 +105,117 @@ public class TuteeService {
             .map(this::convertToSessionDTO)
             .collect(Collectors.toList());
     }
-    
+
     public List<SessionDTO> getUpcomingSessions(Long tuteeId) {
+        // Get current date components
+        LocalDate today = LocalDate.now();
+        int currentYear = today.getYear();
+        int currentMonth = today.getMonthValue();
+        int currentDay = today.getDayOfMonth();
+        
         List<SessionEntity> sessions = sessionRepository.findByTutee_TuteeId(tuteeId);
+        
         return sessions.stream()
-            .filter(session -> "SCHEDULED".equals(session.getStatus()) || "IN_PROGRESS".equals(session.getStatus()))
-            .filter(session -> session.getSessionDate().isAfter(LocalDate.now().minusDays(1)))
-            .sorted(Comparator.comparing(SessionEntity::getSessionDate)
-                .thenComparing(SessionEntity::getStartTime))
+            .filter(session -> "Pending".equals(session.getStatus()) || 
+                            "Accepted".equals(session.getStatus()) || 
+                            "Ongoing".equals(session.getStatus()))
+            .filter(session -> {
+                // Filter sessions that are today or in the future
+                if (session.getSessionYear() > currentYear) {
+                    return true;
+                } else if (session.getSessionYear() == currentYear) {
+                    if (session.getSessionMonth() > currentMonth) {
+                        return true;
+                    } else if (session.getSessionMonth() == currentMonth) {
+                        return session.getSessionDay() >= currentDay;
+                    }
+                }
+                return false;
+            })
+            .sorted((s1, s2) -> {
+                // Sort by date (year, month, day) and time
+                if (s1.getSessionYear() != s2.getSessionYear()) {
+                    return Integer.compare(s1.getSessionYear(), s2.getSessionYear());
+                }
+                if (s1.getSessionMonth() != s2.getSessionMonth()) {
+                    return Integer.compare(s1.getSessionMonth(), s2.getSessionMonth());
+                }
+                if (s1.getSessionDay() != s2.getSessionDay()) {
+                    return Integer.compare(s1.getSessionDay(), s2.getSessionDay());
+                }
+                
+                // Convert time to 24-hour format for comparison
+                int hour1 = convertTo24Hour(s1.getStartHour(), s1.getStartAmPm());
+                int hour2 = convertTo24Hour(s2.getStartHour(), s2.getStartAmPm());
+                
+                if (hour1 != hour2) {
+                    return Integer.compare(hour1, hour2);
+                }
+                return Integer.compare(s1.getStartMinute(), s2.getStartMinute());
+            })
             .map(this::convertToSessionDTO)
             .collect(Collectors.toList());
     }
-    
+
     public List<SessionDTO> getPastSessions(Long tuteeId) {
+        // Get current date components
+        LocalDate today = LocalDate.now();
+        int currentYear = today.getYear();
+        int currentMonth = today.getMonthValue();
+        int currentDay = today.getDayOfMonth();
+        
         List<SessionEntity> sessions = sessionRepository.findByTutee_TuteeId(tuteeId);
+        
         return sessions.stream()
-            .filter(session -> "COMPLETED".equals(session.getStatus()))
-            .sorted(Comparator.comparing(SessionEntity::getSessionDate).reversed())
+            .filter(session -> "Completed".equals(session.getStatus()) || 
+                            "Cancelled".equals(session.getStatus()))
+            .filter(session -> {
+                // Filter sessions that are in the past
+                if (session.getSessionYear() < currentYear) {
+                    return true;
+                } else if (session.getSessionYear() == currentYear) {
+                    if (session.getSessionMonth() < currentMonth) {
+                        return true;
+                    } else if (session.getSessionMonth() == currentMonth) {
+                        return session.getSessionDay() < currentDay;
+                    }
+                }
+                return false;
+            })
+            .sorted((s1, s2) -> {
+                // Sort by date descending (most recent first)
+                if (s1.getSessionYear() != s2.getSessionYear()) {
+                    return Integer.compare(s2.getSessionYear(), s1.getSessionYear());
+                }
+                if (s1.getSessionMonth() != s2.getSessionMonth()) {
+                    return Integer.compare(s2.getSessionMonth(), s1.getSessionMonth());
+                }
+                if (s1.getSessionDay() != s2.getSessionDay()) {
+                    return Integer.compare(s2.getSessionDay(), s1.getSessionDay());
+                }
+                
+                // Convert time to 24-hour format for comparison
+                int hour1 = convertTo24Hour(s1.getStartHour(), s1.getStartAmPm());
+                int hour2 = convertTo24Hour(s2.getStartHour(), s2.getStartAmPm());
+                
+                if (hour1 != hour2) {
+                    return Integer.compare(hour2, hour1);
+                }
+                return Integer.compare(s2.getStartMinute(), s1.getStartMinute());
+            })
             .map(this::convertToSessionDTO)
             .collect(Collectors.toList());
+    }
+
+    // Helper method to convert 12-hour time to 24-hour format for comparison
+    private int convertTo24Hour(int hour12, String amPm) {
+        if (amPm == null) return hour12;
+        
+        if ("PM".equalsIgnoreCase(amPm)) {
+            return (hour12 == 12) ? 12 : hour12 + 12;
+        } else { // AM
+            return (hour12 == 12) ? 0 : hour12;
+        }
     }
 
     public Map<String, Object> getTuteeStatistics(Long tuteeId) {
@@ -131,18 +223,19 @@ public class TuteeService {
         
         long totalSessions = sessions.size();
         long completedSessions = sessions.stream()
-            .filter(s -> "COMPLETED".equals(s.getStatus()))
+            .filter(s -> "Completed".equals(s.getStatus()))
             .count();
         long cancelledSessions = sessions.stream()
-            .filter(s -> "CANCELLED".equals(s.getStatus()))
+            .filter(s -> "Cancelled".equals(s.getStatus()))
             .count();
         
+        // Sum up durations (in minutes) and convert to hours
         double totalHours = sessions.stream()
             .mapToDouble(s -> s.getDuration() / 60.0)
             .sum();
         
         double averageRating = sessions.stream()
-            .filter(s -> s.getRating() != 0.0f)
+            .filter(s -> s.getRating() != null && s.getRating() > 0)
             .mapToDouble(SessionEntity::getRating)
             .average()
             .orElse(0.0);
@@ -175,10 +268,15 @@ public class TuteeService {
         dto.setTutorId(session.getTutor().getTutorId());
         dto.setTuteeId(session.getTutor().getTutorId());
         dto.setSubjectId(session.getSubject().getSubjectId());
-        dto.setSessionDate(session.getSessionDate());
-        dto.setStartTime(session.getStartTime());
-        dto.setEndTime(session.getEndTime());
+        dto.setGoal(session.getGoal());
+        dto.setMedium(session.getMedium());
         dto.setDuration(session.getDuration());
+        dto.setSessionMonth(session.getSessionMonth());
+        dto.setSessionDay(session.getSessionDay());
+        dto.setSessionYear(session.getSessionYear());
+        dto.setStartHour(session.getStartHour());
+        dto.setStartMinute(session.getStartMinute());
+        dto.setStartAmPm(session.getStartAmPm());
         dto.setStatus(session.getStatus());
         dto.setRating(session.getRating());
         dto.setFeedback(session.getFeedback());

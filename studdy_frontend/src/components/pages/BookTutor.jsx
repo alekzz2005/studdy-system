@@ -5,30 +5,32 @@ import Button from '../common/Button';
 import StepIndicator from '../common/StepIndicator';
 import SubjectSelection from './BookTutorSteps/SubjectSelection';
 import TutorSelection from './BookTutorSteps/TutorSelection';
+
 import { sessionService } from '../../services/session';
+import { subjectService } from '../../services/subject';
+import { tutorSubjectService } from '../../services/tutorsubject';
 import { userAPI } from '../../services/user';
 import './styles/BookTutor.css';
 
 const BookTutor = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    subjectId: '',
-    learningGoals: '',
-    medium: 'face-to-face',
-    tutorId: '',
+    goal: '',
+    medium: '',
+    duration: '', // in hours
     sessionMonth: '',
     sessionDay: '',
     sessionYear: '',
-    startHour: '09',
-    startMinute: '00',
-    startAmPm: 'AM',
-    duration: '1' // in hours
+    startHour: '',
+    startMinute: '',
+    startAmPm: ''
   });
   const [subjects, setSubjects] = useState([]);
   const [tutors, setTutors] = useState([]);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const navigate = useNavigate();
 
   // Get current year and next year for year dropdown
@@ -62,7 +64,7 @@ const BookTutor = () => {
     if (month === 2) {
       return (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 29 : 28;
     }
-    
+    0
     // Months with 30 days
     const thirtyDayMonths = [4, 6, 9, 11];
     return thirtyDayMonths.includes(month) ? 30 : 31;
@@ -118,27 +120,76 @@ const BookTutor = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // Fetch subjects from API (mock for now)
+        setIsLoadingData(true);
+        
+        // Fetch subjects from real API
+        const subjectsResponse = await subjectService.getAllSubjects();
+        const subjectsData = subjectsResponse.map(subject => ({
+          subjectId: subject.subjectId,
+          name: subject.subjectName,
+          category: subject.subjectDesc || 'General', // Use description as category
+          description: subject.subjectDesc
+        }));
+        setSubjects(subjectsData);
+
+        // Fetch tutors from tutor-subject API
+        // First, get all tutor-subject associations
+        const tutorSubjectsResponse = await tutorSubjectService.getAllTutorSubjects();
+        
+        // Group tutors by their ID and collect their subjects
+        const tutorsMap = new Map();
+        
+        tutorSubjectsResponse.forEach(tutorSubject => {
+          const tutorId = tutorSubject.tutorId;
+          const subjectName = tutorSubject.subjectName || tutorSubject.subject?.subjectName || 'Unknown';
+          
+          if (!tutorsMap.has(tutorId)) {
+            // Initialize tutor data
+            tutorsMap.set(tutorId, {
+              tutorId: tutorId,
+              name: tutorSubject.tutorName || `Tutor ${tutorId}`,
+              expertise: [subjectName],
+              rating: 4.5, // Default rating - you might want to fetch actual ratings
+              // Add other tutor properties if available
+              user: tutorSubject.tutor?.user || null
+            });
+          } else {
+            // Add subject to existing tutor's expertise
+            const tutor = tutorsMap.get(tutorId);
+            if (!tutor.expertise.includes(subjectName)) {
+              tutor.expertise.push(subjectName);
+            }
+          }
+        });
+
+        // Convert map to array
+        const tutorsData = Array.from(tutorsMap.values());
+        setTutors(tutorsData);
+
+        console.log('Fetched real data:', { subjects: subjectsData, tutors: tutorsData });
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+        setErrors({ fetch: 'Failed to load initial data. Please try again.' });
+        
+        // Fallback to mock data if API fails (optional)
         const mockSubjects = [
-          { subjectId: 1, name: 'Mathematics', category: 'Science' },
-          { subjectId: 2, name: 'Physics', category: 'Science' },
-          { subjectId: 3, name: 'English Literature', category: 'Arts' },
-          { subjectId: 4, name: 'Computer Science', category: 'Technology' },
-          { subjectId: 5, name: 'Chemistry', category: 'Science' }
+          { subjectId: 1, name: 'Mathematics', category: 'Science', description: 'Mathematics subject' },
+          { subjectId: 2, name: 'Physics', category: 'Science', description: 'Physics subject' },
+          { subjectId: 3, name: 'English Literature', category: 'Arts', description: 'English Literature subject' },
+          { subjectId: 4, name: 'Computer Science', category: 'Technology', description: 'Computer Science subject' },
+          { subjectId: 5, name: 'Chemistry', category: 'Science', description: 'Chemistry subject' }
         ];
         setSubjects(mockSubjects);
 
-        // Fetch tutors from API (mock for now)
         const mockTutors = [
-          { userId: 1, name: 'John Smith', expertise: ['Mathematics', 'Physics'], rating: 4.8 },
-          { userId: 2, name: 'Sarah Johnson', expertise: ['English Literature'], rating: 4.9 },
-          { userId: 3, name: 'Mike Chen', expertise: ['Computer Science', 'Mathematics'], rating: 4.7 },
-          { userId: 4, name: 'Emily Davis', expertise: ['Chemistry', 'Physics'], rating: 4.6 }
+          { tutorId: 1, name: 'John Smith', expertise: ['Mathematics', 'Physics'], rating: 4.8 },
+          { tutorId: 2, name: 'Sarah Johnson', expertise: ['English Literature'], rating: 4.9 },
+          { tutorId: 3, name: 'Mike Chen', expertise: ['Computer Science', 'Mathematics'], rating: 4.7 },
+          { tutorId: 4, name: 'Emily Davis', expertise: ['Chemistry', 'Physics'], rating: 4.6 }
         ];
         setTutors(mockTutors);
-      } catch (error) {
-        console.error('Error fetching initial data:', error);
-        setErrors({ fetch: 'Failed to load initial data' });
+      } finally {
+        setIsLoadingData(false);
       }
     };
 
@@ -194,7 +245,8 @@ const BookTutor = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  
+  // Update handleSubmit to use correct tutorId
   const handleSubmit = async () => {
     if (step < 3) {
       if (validateStep(step)) {
@@ -206,51 +258,39 @@ const BookTutor = () => {
         try {
           // Get current user ID
           const currentUser = userAPI.getCurrentUser();
-          if (!currentUser || !currentUser.userId) {
-            throw new Error('Please log in to book a session');
+          if (!currentUser || !currentUser.tuteeId) {
+            throw new Error('Please log in as a tutee to book a session');
           }
 
-          // Format session date
-          const sessionDate = `${formData.sessionYear}-${formData.sessionMonth}-${formData.sessionDay}`;
+          // Convert duration from hours to minutes
+          const durationMinutes = parseFloat(formData.duration) * 60;
           
-          // Convert 12-hour time to 24-hour time
-          let hour24 = parseInt(formData.startHour);
-          if (formData.startAmPm === 'PM' && hour24 !== 12) {
-            hour24 += 12;
-          } else if (formData.startAmPm === 'AM' && hour24 === 12) {
-            hour24 = 0;
-          }
-          const startTime = `${hour24.toString().padStart(2, '0')}:${formData.startMinute}`;
-          
-          // Calculate end time based on duration
-          const durationHours = parseFloat(formData.duration);
-          const startDate = new Date(`2000-01-01T${startTime}`);
-          const endDate = new Date(startDate.getTime() + (durationHours * 60 * 60 * 1000));
-          const endTime = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
-
           // Prepare session data
           const sessionData = {
             tutorId: parseInt(formData.tutorId),
-            tuteeId: currentUser.userId,
+            tuteeId: parseInt(currentUser.tuteeId),
             subjectId: parseInt(formData.subjectId),
-            learningGoals: formData.learningGoals,
+            goal: formData.learningGoals,
             medium: formData.medium,
-            sessionDate: sessionDate,
-            startTime: startTime,
-            endTime: endTime,
-            duration: durationHours * 60, // Convert to minutes
-            status: 'SCHEDULED'
+            duration: durationMinutes,
+            sessionMonth: parseInt(formData.sessionMonth),
+            sessionDay: parseInt(formData.sessionDay),
+            sessionYear: parseInt(formData.sessionYear),
+            startHour: parseInt(formData.startHour),
+            startMinute: parseInt(formData.startMinute),
+            startAmPm: formData.startAmPm,
+            status: 'Pending'
           };
 
           console.log('Booking session with data:', sessionData);
           
-          // Call session service to book session
-          const result = await sessionService.bookSession(sessionData);
+          // Call session service to create session
+          const result = await sessionService.createSession(sessionData);
           
-          console.log('Session booked successfully:', result);
+          console.log('Session created successfully:', result);
           
           // Show success message
-          alert(`Session booked successfully! You'll receive a confirmation email.`);
+          alert(`Session booked successfully! Status: Pending. You'll receive a confirmation email.`);
           
           // Navigate to dashboard
           navigate('/dashboard');
@@ -267,6 +307,20 @@ const BookTutor = () => {
     }
   };
 
+    // Add a loading state for the initial data fetch
+  if (isLoadingData) {
+    return (
+      <div className="book-tutor-container">
+        <div className="book-tutor-card">
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading subjects and tutors...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleBack = () => {
     if (step > 1) {
       setStep(step - 1);
@@ -275,12 +329,14 @@ const BookTutor = () => {
     }
   };
 
+  // Update getTutorsForSubject to work with real data
   const getTutorsForSubject = () => {
     if (!formData.subjectId) return [];
     
     const selectedSubject = subjects.find(sub => sub.subjectId === parseInt(formData.subjectId));
     if (!selectedSubject) return [];
     
+    // Filter tutors who have this subject in their expertise
     return tutors.filter(tutor => 
       tutor.expertise.includes(selectedSubject.name)
     );
