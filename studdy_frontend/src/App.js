@@ -7,6 +7,7 @@ import Dashboard from './components/pages/Dashboard';
 import BookTutor from './components/pages/BookTutor';
 import Sessions from './components/pages/Sessions'; 
 import Profile from './components/pages/Profile'; 
+import MessagesPage from './components/pages/MessagesPage';
 
 import './styles/index.css';
 
@@ -31,13 +32,14 @@ function App() {
           {/* Landing Page - Public route */}
           <Route path="/" element={<LandingPage />} />
 
-          <Route path="/login" element={ <PublicRoute> <LoginPage /> </PublicRoute>} />
-          <Route path="/register" element={ <PublicRoute> <RegisterPage /> </PublicRoute>} />
+          <Route path="/login" element={ <LoginPage /> } />
+          <Route path="/register" element={ <RegisterPage /> } />
 
-          <Route path="/dashboard" element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
-          <Route path="/book-tutor" element={<ProtectedRoute> <BookTutor /> </ProtectedRoute>} />
-          <Route path="/sessions" element={<ProtectedRoute> <Sessions /> </ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
+          <Route path="/dashboard" element={ <Dashboard /> } />
+          <Route path="/book-tutor" element={ <BookTutor /> } />
+          <Route path="/sessions" element={ <Sessions /> } />
+          <Route path="/profile" element={ <Profile /> } />
+          <Route path="/messages" element={ <MessagesPage /> } />
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" />} />
