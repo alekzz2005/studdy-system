@@ -1,3 +1,4 @@
+// components/auth/Register.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
@@ -7,6 +8,7 @@ import StepIndicator from '../common/StepIndicator';
 import BasicInfo from './RegisterSteps/BasicInfo';
 import AcademicInfo from './RegisterSteps/AcademicInfo';
 import AboutYou from './RegisterSteps/AboutYou';
+import TutorSubjects from './RegisterSteps/TutorSubjects'; // New component
 import { authAPI } from '../../services/auth';
 
 const RegisterPage = () => {
@@ -44,6 +46,10 @@ const RegisterPage = () => {
     }
   };
 
+  const handleTutorSubjectsChange = (selectedSubjects) => {
+    setFormData({ ...formData, tutorSubjects: selectedSubjects });
+  };
+
   const validateStep = (currentStep) => {
     const newErrors = {};
     
@@ -76,6 +82,17 @@ const RegisterPage = () => {
     if (currentStep === 2) {
       if (!formData.school) newErrors.school = 'School is required';
       if (!formData.gradeLevel || formData.gradeLevel === 0) newErrors.gradeLevel = 'Grade level is required';
+    }
+
+    if (currentStep === 3) {
+      if (!formData.userType) newErrors.userType = 'Please select your primary role';
+      if (!formData.address) newErrors.address = 'Address is required';
+      if (!formData.bio) newErrors.bio = 'Bio is required';
+      
+      // Validate tutor subjects if user selected tutor
+      if (formData.userType === 'tutor' && formData.tutorSubjects.length === 0) {
+        newErrors.tutorSubjects = 'Please select at least one subject you can teach';
+      }
     }
 
     setErrors(newErrors);
@@ -125,7 +142,18 @@ const RegisterPage = () => {
       <div>
         {step === 1 && <BasicInfo formData={formData} onChange={handleChange} errors={errors} />}
         {step === 2 && <AcademicInfo formData={formData} onChange={handleChange} errors={errors} />}
-        {step === 3 && <AboutYou formData={formData} onChange={handleChange} errors={errors} />}
+        {step === 3 && (
+          <>
+            <AboutYou formData={formData} onChange={handleChange} errors={errors} />
+            {formData.userType === 'tutor' && (
+              <TutorSubjects 
+                selectedSubjects={formData.tutorSubjects}
+                onChange={handleTutorSubjectsChange}
+                error={errors.tutorSubjects}
+              />
+            )}
+          </>
+        )}
 
         {errors.submit && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">

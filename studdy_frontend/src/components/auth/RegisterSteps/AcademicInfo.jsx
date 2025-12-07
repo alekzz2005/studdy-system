@@ -1,3 +1,4 @@
+// components/auth/RegisterSteps/AcademicInfo.jsx
 import React from 'react';
 import { BookOpen, GraduationCap, Target } from 'lucide-react';
 import InputField from '../../common/InputField';
@@ -6,6 +7,7 @@ import Textarea from '../../common/Textarea';
 
 const AcademicInfo = ({ formData, onChange, errors }) => {
   const gradeLevels = [
+    { value: 0, label: 'Select grade level' },
     { value: 7, label: 'Grade 7' },
     { value: 8, label: 'Grade 8' },
     { value: 9, label: 'Grade 9' },
@@ -15,7 +17,8 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
     { value: 13, label: 'College - 1st Year' },
     { value: 14, label: 'College - 2nd Year' },
     { value: 15, label: 'College - 3rd Year' },
-    { value: 16, label: 'College - 4th Year' }
+    { value: 16, label: 'College - 4th Year' },
+    { value: 17, label: 'Postgraduate' }
   ];
 
   const handleChange = (e) => {
@@ -37,6 +40,7 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
     <div className="space-y-5">
       <h2 className="text-xl font-semibold text-gray-800 mb-4">Academic Information</h2>
       
+      {/* School/University - Full width */}
       <InputField
         icon={BookOpen}
         label="School/University"
@@ -49,7 +53,8 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
         required
       />
 
-      <div className="form-grid">
+      {/* Grade Level and Major in a grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Select
           icon={GraduationCap}
           label="Grade Level"
@@ -63,7 +68,7 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
 
         <InputField
           icon={Target}
-          label="Major/Specialization"
+          label="Major/Specialization (Optional)"
           type="text"
           name="major"
           placeholder="Information Technology"
@@ -72,16 +77,6 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
           error={errors.major}
         />
       </div>
-
-      {/* <Textarea
-        label="Learning Goals"
-        name="goals"
-        placeholder="What do you want to achieve on Studdy?"
-        value={formData.goals}
-        onChange={handleChange}
-        rows={3}
-        error={errors.goals}
-      /> */}
     </div>
   );
 };
