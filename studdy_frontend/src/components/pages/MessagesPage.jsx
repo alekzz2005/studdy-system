@@ -12,7 +12,8 @@ import {
   User,
   Clock,
   CheckCheck,
-  Check
+  Check,
+  RefreshCw // Added refresh icon
 } from 'lucide-react';
 
 const MessagesPage = () => {
@@ -22,6 +23,8 @@ const MessagesPage = () => {
   const [messages, setMessages] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [loadingConversations, setLoadingConversations] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Mock current user data
@@ -43,16 +46,14 @@ const MessagesPage = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Auto-select first conversation on large screens
-  useEffect(() => {
-    if (isLargeScreen && conversations.length > 0 && !selectedConversation) {
-      setSelectedConversation(conversations[0]);
-      markAsRead(conversations[0].id);
-    }
-  }, [isLargeScreen, conversations, selectedConversation]);
+  // Fetch conversations and messages
+  const fetchConversationsAndMessages = async () => {
+    setLoadingConversations(true);
+    setRefreshing(true);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-  // Mock conversations data - Backend should provide this
-  useEffect(() => {
     const mockConversations = [
       {
         id: 1,
@@ -130,7 +131,7 @@ const MessagesPage = () => {
 
     setConversations(mockConversations);
 
-    // Mock messages for each conversation - Backend should provide this
+    // Mock messages for each conversation
     const mockMessages = {
       1: [
         {
@@ -220,12 +221,34 @@ const MessagesPage = () => {
     };
 
     setMessages(mockMessages);
+    setLoadingConversations(false);
+    setRefreshing(false);
+  };
+
+  // Initial fetch on component mount
+  useEffect(() => {
+    fetchConversationsAndMessages();
   }, []);
+
+  // Auto-select first conversation on large screens
+  useEffect(() => {
+    if (isLargeScreen && conversations.length > 0 && !selectedConversation) {
+      setSelectedConversation(conversations[0]);
+      markAsRead(conversations[0].id);
+    }
+  }, [isLargeScreen, conversations, selectedConversation]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedConversation, messages]);
+
+  // Handle refresh button click
+  const handleRefresh = () => {
+    if (!loadingConversations) {
+      fetchConversationsAndMessages();
+    }
+  };
 
   // Format timestamp
   const formatTimestamp = (date) => {
@@ -248,7 +271,7 @@ const MessagesPage = () => {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
 
-  // Handle send message - Backend endpoint: POST /api/messages
+  // Handle send message
   const handleSendMessage = async () => {
     if (!message.trim() || !selectedConversation) return;
 
@@ -278,7 +301,7 @@ const MessagesPage = () => {
     // Backend API call would go here
   };
 
-  // Handle mark as read - Backend endpoint: PUT /api/messages/:id/read
+  // Handle mark as read
   const markAsRead = (conversationId) => {
     setConversations(prev => prev.map(conv => 
       conv.id === conversationId 
@@ -318,8 +341,10 @@ const MessagesPage = () => {
               >
                 <ArrowLeft className="w-6 h-6 text-gray-600" />
               </button>
-              <h1 className="text-2xl font-bold text-green-600">Messages</h1>
+              <h1 className="text-2xl font-bold text-green-600 pt-5">Messages</h1>
             </div>
+            
+            {/* Remove the refresh button from here - it's now in the search bar */}
           </div>
         </div>
       </header>
@@ -339,14 +364,28 @@ const MessagesPage = () => {
                     placeholder="Search conversations..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
+                  <button 
+                    onClick={handleRefresh}
+                    disabled={loadingConversations}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+                    title="Refresh conversations"
+                  >
+                    <RefreshCw className={`w-4 h-4 text-gray-500 ${refreshing ? 'animate-spin' : ''}`} />
+                  </button>
                 </div>
               </div>
 
               {/* Conversations List */}
               <div className="flex-1 overflow-y-auto">
-                {filteredConversations.length > 0 ? (
+                {loadingConversations ? (
+                  // Loading state
+                  <div className="flex flex-col items-center justify-center py-12 px-4">
+                    <RefreshCw className="w-8 h-8 text-gray-400 animate-spin mb-4" />
+                    <p className="text-gray-500 text-center">Loading conversations...</p>
+                  </div>
+                ) : filteredConversations.length > 0 ? (
                   filteredConversations.map(conv => (
                     <button
                       key={conv.id}
@@ -405,6 +444,7 @@ const MessagesPage = () => {
                     </button>
                   ))
                 ) : (
+                  // No conversations found
                   <div className="flex flex-col items-center justify-center py-12 px-4">
                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                       <Search className="w-8 h-8 text-gray-400" />

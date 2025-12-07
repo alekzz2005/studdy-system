@@ -22,7 +22,7 @@ import {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  
+
   const [currentUser, setCurrentUser] = useState({
     name: 'Student',
     major: 'Computer Science',
@@ -139,7 +139,7 @@ const Dashboard = () => {
   };
 
   const handleViewAllMessages = () => {
-    alert('Navigate to Messages page');
+    navigate('/messages');
   };
 
   const handleProfileClick = () => {
