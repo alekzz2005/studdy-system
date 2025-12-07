@@ -9,6 +9,7 @@ import TutorSelection from './BookTutorSteps/TutorSelection';
 import { sessionService } from '../../services/session';
 import { subjectService } from '../../services/subject';
 import { tutorSubjectService } from '../../services/tutorsubject';
+import { tuteeService } from '../../services/tutee';
 import { userAPI } from '../../services/user';
 import './styles/BookTutor.css';
 
@@ -246,7 +247,7 @@ const BookTutor = () => {
     return Object.keys(newErrors).length === 0;
   };
   
-  // Update handleSubmit to use correct tutorId
+  // Update handleSubmit to handle async getCurrentUser
   const handleSubmit = async () => {
     if (step < 3) {
       if (validateStep(step)) {
@@ -256,19 +257,56 @@ const BookTutor = () => {
       if (validateStep(step)) {
         setIsLoading(true);
         try {
-          // Get current user ID
-          const currentUser = userAPI.getCurrentUser();
-          if (!currentUser || !currentUser.tuteeId) {
-            throw new Error('Please log in as a tutee to book a session');
+          // Get current user ID - FIX: await the async function
+          console.log('=== DEBUG: GETTING CURRENT USER ===');
+          const currentUserResponse = await userAPI.getCurrentUser(); // ADD AWAIT
+          console.log('Current user API response:', currentUserResponse);
+          
+          let currentUser;
+          if (currentUserResponse && currentUserResponse.success) {
+            currentUser = currentUserResponse.user;
+          } else {
+            console.error('DEBUG: API response unsuccessful:', currentUserResponse);
+            throw new Error('Unable to fetch user profile. Please log in again.');
+          }
+          
+          console.log('Current user object:', currentUser);
+          console.log('Current user keys:', currentUser ? Object.keys(currentUser) : 'No user');
+          console.log('Current user type:', currentUser?.type);
+          
+          // Now we need to get tuteeId from a different endpoint
+          // Since UserDTO doesn't have tuteeId, we need to fetch tutee profile
+          let tuteeId;
+          
+          if (currentUser.type === 'TUTEE') {
+            try {
+              // You need a tutee service to get tutee by userId
+              const tuteeResponse = await tuteeService.getTuteeByUserId(currentUser.userId);
+              console.log('Tutee profile response:', tuteeResponse);
+              
+              if (tuteeResponse && tuteeResponse.tuteeId) {
+                tuteeId = tuteeResponse.tuteeId;
+              } else {
+                console.error('DEBUG: No tuteeId in tutee profile');
+                throw new Error('Unable to retrieve tutee profile. Please contact support.');
+              }
+            } catch (error) {
+              console.error('DEBUG: Error fetching tutee profile:', error);
+              throw new Error('Please log in as a tutee to book a session');
+            }
+          } else {
+            throw new Error('Only tutees can book sessions. Your account type is: ' + currentUser.type);
           }
 
+          console.log('DEBUG: Using tuteeId:', tuteeId);
+          
           // Convert duration from hours to minutes
           const durationMinutes = parseFloat(formData.duration) * 60;
           
           // Prepare session data
           const sessionData = {
             tutorId: parseInt(formData.tutorId),
-            tuteeId: parseInt(currentUser.tuteeId),
+            tuteeId: parseInt(tuteeId),
             subjectId: parseInt(formData.subjectId),
             goal: formData.learningGoals,
             medium: formData.medium,
@@ -297,6 +335,7 @@ const BookTutor = () => {
           
         } catch (error) {
           console.error('Booking error:', error);
+          console.error('Error stack:', error.stack);
           setErrors({ 
             submit: error.response?.data?.message || error.message || 'Booking failed. Please try again.' 
           });

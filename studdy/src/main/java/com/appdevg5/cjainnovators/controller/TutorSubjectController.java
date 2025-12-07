@@ -21,7 +21,7 @@ public class TutorSubjectController {
     private final TutorSubjectService tutorSubjectService;
 
     // CREATE
-    @PostMapping
+    @PostMapping("/create-tutor-subject")
     public ResponseEntity<?> createTutorSubject(@RequestBody CreateTutorSubjectDTO createDTO) {
         try {
             TutorSubjectDTO created = tutorSubjectService.createTutorSubject(createDTO);
@@ -35,7 +35,7 @@ public class TutorSubjectController {
     }
 
     // READ - Get all
-    @GetMapping
+    @GetMapping("/get-all")
     public ResponseEntity<List<TutorSubjectDTO>> getAllTutorSubjects() {
         return ResponseEntity.ok(tutorSubjectService.getAllTutorSubjects());
     }

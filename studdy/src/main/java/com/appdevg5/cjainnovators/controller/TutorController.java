@@ -20,7 +20,7 @@ public class TutorController {
     @Autowired
     private TutorService tutorService;
     
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<?> createTutor(@RequestBody CreateTutorDTO createTutorDTO) {
         try {
             TutorDTO tutor = tutorService.createTutor(createTutorDTO);

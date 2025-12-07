@@ -61,7 +61,7 @@ const AboutYou = ({ formData, onChange, errors }) => {
 
       {/* Role information note */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-        <p className="text-sm text-green-800">
+        <div className="text-sm text-green-800">
           <strong>About Roles:</strong>
           <ul className="mt-2 space-y-2 pl-5">
             <li className="flex items-start">
@@ -79,7 +79,7 @@ const AboutYou = ({ formData, onChange, errors }) => {
               </div>
             </li>
           </ul>
-        </p>
+        </div>
       </div>
     </div>
   );
