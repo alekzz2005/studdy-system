@@ -64,5 +64,5 @@ public interface SessionRepository extends JpaRepository<SessionEntity, Long> {
            "AND s.status = 'Completed'")
     List<SessionEntity> findMonthlyCompletedSessionsByTutor(@Param("tutorId") Long tutorId,
                                                             @Param("year") int year,
-                                                            @Param("month") int month);
+                                                            @Param("month") int month);                                                    
 }

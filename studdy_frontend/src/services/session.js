@@ -15,7 +15,7 @@ export const sessionService = {
 
   // READ - Get all
   getAllSessions: async () => {
-    const response = await api.get('/api/sessions');
+    const response = await api.get('/api/sessions/get-all');
     return response.data;
   },
 
@@ -25,7 +25,7 @@ export const sessionService = {
     return response.data;
   },
 
-  // READ - Get by tutee
+  // READ - Get by tutee (for students)
   getSessionsByTutee: async (tuteeId) => {
     const response = await api.get(`/api/sessions/tutee/${tuteeId}`);
     return response.data;
@@ -71,5 +71,73 @@ export const sessionService = {
   deleteSession: async (id) => {
     const response = await api.delete(`/api/sessions/delete/${id}`);
     return response.data;
+  },
+
+  // NEW: Get upcoming sessions for current user
+  getUpcomingSessionsForUser: async (userId, userType) => {
+    try {
+      let sessions = [];
+      
+      if (userType === 'Tutor') {
+        // For tutors, get sessions where they are the tutor
+        const response = await api.get(`/api/sessions/tutor/${userId}`);
+        sessions = response.data || [];
+      } else {
+        // For students/tutees, get sessions where they are the tutee
+        const response = await api.get(`/api/sessions/tutee/${userId}`);
+        sessions = response.data || [];
+      }
+      
+      // Filter for upcoming sessions (status = 'Accepted' or 'Pending')
+      const now = new Date();
+      const upcoming = sessions.filter(session => {
+        const sessionDate = new Date(
+          session.sessionYear,
+          session.sessionMonth - 1, // JavaScript months are 0-indexed
+          session.sessionDay,
+          session.startHour + (session.startAmPm === 'PM' ? 12 : 0),
+          session.startMinute
+        );
+        
+        return (
+          (session.status === 'Accepted' || session.status === 'Pending') &&
+          sessionDate >= now
+        );
+      });
+      
+      return upcoming;
+    } catch (error) {
+      console.error('Error fetching upcoming sessions:', error);
+      throw error;
+    }
+  },
+
+  // Helper: Format session time
+  formatSessionTime: (session) => {
+    const { startHour, startMinute, startAmPm, duration } = session;
+    
+    // Calculate end time
+    let endHour = startHour;
+    let endMinute = startMinute + duration;
+    let endAmPm = startAmPm;
+    
+    // Handle minute overflow
+    if (endMinute >= 60) {
+      endHour += Math.floor(endMinute / 60);
+      endMinute = endMinute % 60;
+    }
+    
+    // Handle hour overflow (12-hour format)
+    if (endHour > 12) {
+      endHour -= 12;
+      endAmPm = startAmPm === 'AM' ? 'PM' : 'AM';
+    } else if (endHour === 12) {
+      endAmPm = startAmPm === 'AM' ? 'PM' : 'AM';
+    }
+    
+    const startTime = `${startHour}:${startMinute.toString().padStart(2, '0')} ${startAmPm}`;
+    const endTime = `${endHour}:${endMinute.toString().padStart(2, '0')} ${endAmPm}`;
+    
+    return { startTime, endTime };
   }
 };

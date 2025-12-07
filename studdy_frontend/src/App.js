@@ -3,9 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './components/pages/LandingPage';
 import LoginPage from './components/auth/Login';
 import RegisterPage from './components/auth/Register';
-import Dashboard from './components/pages/Dashboard';
+import Dashboard from './components/dashboard/Dashboard';
 import BookTutor from './components/pages/BookTutor';
-import Sessions from './components/pages/Sessions'; 
 import Profile from './components/pages/Profile'; 
 import MessagesPage from './components/pages/MessagesPage';
 
@@ -35,11 +34,9 @@ function App() {
           <Route path="/login" element={ <LoginPage /> } />
           <Route path="/register" element={ <RegisterPage /> } />
 
-          <Route path="/dashboard" element={ <Dashboard /> } />
-          <Route path="/book-tutor" element={ <BookTutor /> } />
-          <Route path="/sessions" element={ <Sessions /> } />
-          <Route path="/profile" element={ <Profile /> } />
-          <Route path="/messages" element={ <MessagesPage /> } />
+          <Route path="/dashboard" element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
+          <Route path="/book-tutor" element={<ProtectedRoute> <BookTutor /> </ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" />} />

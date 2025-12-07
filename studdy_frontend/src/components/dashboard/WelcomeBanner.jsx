@@ -1,82 +1,23 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
-import { userAPI } from '../../services/user';
+import { GraduationCap } from 'lucide-react';
 
-const WelcomeBanner = () => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    console.log('Current token in localStorage:', localStorage.getItem('authToken'));
-  
-    // Manually test the request
-    const testRequest = async () => {
-      const token = localStorage.getItem('authToken');
-      console.log('Token to send:', token);
-      
-      try {
-        const response = await fetch('http://localhost:8080/api/users/me', {
-          headers: {
-            'Authorization': token
-          }
-        });
-        console.log('Response status:', response.status);
-        const data = await response.json();
-        console.log('Response data:', data);
-      } catch (error) {
-        console.error('Fetch error:', error);
-      }
-    };
-    
-    testRequest();
-
-    const fetchCurrentUser = async () => {
-      try {
-        const response = await userAPI.getCurrentUser();
-        if (response.success) {
-          setCurrentUser(response.user);
-        }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCurrentUser();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="welcome-banner">
-        <h1>Loading...</h1>
-      </div>
-    );
-  }
-
-  // Get user name safely
-  const getUserName = () => {
-    if (!currentUser) return 'Student';
-    if (currentUser.firstName) return currentUser.firstName;
-    if (currentUser.lastName) return currentUser.lastName;
-    return 'Student';
-  };
-
-  const userName = getUserName();
-  
-  // Get current time for greeting
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
-
-  const upcomingSessionsCount = 2;
-
+const WelcomeBanner = ({ currentUser }) => {
   return (
-    <div className="welcome-banner">
-      <h1>{getGreeting()}, {userName}!</h1>
-      <p>You have {upcomingSessionsCount} upcoming session(s). Ready to learn?</p>
+    <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-8 mb-8 text-white shadow-lg">
+      <h2 className="text-3xl font-bold mb-2">
+        Welcome back, {currentUser?.firstName || 'Student'}! 👋
+      </h2>
+      <p className="text-green-50 text-lg">
+        {currentUser?.type === 'TUTOR' 
+          ? 'Ready to help students today?' 
+          : 'Ready to continue your learning journey?'}
+      </p>
+      {currentUser?.major && (
+        <div className="mt-4 flex items-center">
+          <GraduationCap className="w-5 h-5 mr-2" />
+          <span>{currentUser.major} • {currentUser.school || 'University'}</span>
+        </div>
+      )}
     </div>
   );
 };

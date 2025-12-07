@@ -49,7 +49,7 @@ public class SessionController {
     }
 
     // READ - Get all
-    @GetMapping
+    @GetMapping("/get-all")
     public ResponseEntity<List<SessionDTO>> getAllSessions() {
         return ResponseEntity.ok(sessionService.getAllSessions());
     }
