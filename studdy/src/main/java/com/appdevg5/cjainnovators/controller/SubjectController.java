@@ -42,7 +42,7 @@ public class SubjectController {
     
     // ========== READ ==========
     
-    @GetMapping
+    @GetMapping("get-all")
     public ResponseEntity<List<SubjectDTO>> getAllSubjects() {
         List<SubjectDTO> subjects = subjectService.getAllSubjects();
         return ResponseEntity.ok(subjects);

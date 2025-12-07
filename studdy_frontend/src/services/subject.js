@@ -9,7 +9,7 @@ export const subjectService = {
 
   // READ - Get all
   getAllSubjects: async () => {
-    const response = await api.get('/api/subjects');
+    const response = await api.get('/api/subjects/get-all');
     return response.data;
   },
 

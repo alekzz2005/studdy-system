@@ -23,7 +23,7 @@ public class TuteeController {
         this.tuteeService = tuteeService;
     }
     
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<?> createTutee(@RequestBody CreateTuteeDTO createTuteeDTO) {
         try {
             TuteeDTO tutee = tuteeService.createTutee(createTuteeDTO);

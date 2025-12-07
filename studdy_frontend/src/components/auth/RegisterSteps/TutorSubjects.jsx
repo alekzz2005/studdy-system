@@ -1,23 +1,10 @@
 // components/auth/RegisterSteps/TutorSubjects.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Check } from 'lucide-react';
 
-const TutorSubjects = ({ selectedSubjects, onChange, error }) => {
-  // Common subjects for tutoring
-  const allSubjects = [
-    { id: 'math', name: 'Mathematics', description: 'Algebra, Calculus, Geometry, Statistics' },
-    { id: 'physics', name: 'Physics', description: 'Mechanics, Thermodynamics, Electromagnetism' },
-    { id: 'chemistry', name: 'Chemistry', description: 'Organic, Inorganic, Physical Chemistry' },
-    { id: 'biology', name: 'Biology', description: 'Cell Biology, Genetics, Ecology' },
-    { id: 'cs', name: 'Computer Science', description: 'Programming, Algorithms, Data Structures' },
-    { id: 'english', name: 'English', description: 'Grammar, Literature, Writing Skills' },
-    { id: 'history', name: 'History', description: 'World History, Philippine History' },
-    { id: 'economics', name: 'Economics', description: 'Microeconomics, Macroeconomics' },
-    { id: 'accounting', name: 'Accounting', description: 'Financial, Managerial Accounting' },
-    { id: 'engineering', name: 'Engineering', description: 'Civil, Electrical, Mechanical' },
-    { id: 'filipino', name: 'Filipino', description: 'Wika at Panitikan' },
-    { id: 'spanish', name: 'Spanish', description: 'Spanish Language and Culture' },
-  ];
+const TutorSubjects = ({ subjects, selectedSubjects, onChange, error }) => {
+  // If subjects aren't provided via props, you can fetch them here
+  // But it's better to fetch in the parent component and pass down
 
   const handleSubjectToggle = (subjectId) => {
     const isSelected = selectedSubjects.includes(subjectId);
@@ -31,6 +18,19 @@ const TutorSubjects = ({ selectedSubjects, onChange, error }) => {
     
     onChange(newSelectedSubjects);
   };
+
+  // If no subjects are passed, show a loading state or default list
+  if (!subjects || subjects.length === 0) {
+    return (
+      <div className="space-y-4 mt-6">
+        <div className="flex items-center space-x-2">
+          <BookOpen className="w-5 h-5 text-green-600" />
+          <h3 className="text-lg font-semibold text-gray-800">Subjects You Can Teach</h3>
+        </div>
+        <p className="text-sm text-gray-600">Loading subjects...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 mt-6">
@@ -50,14 +50,14 @@ const TutorSubjects = ({ selectedSubjects, onChange, error }) => {
       )}
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {allSubjects.map((subject) => {
-          const isSelected = selectedSubjects.includes(subject.id);
+        {subjects.map((subject) => {
+          const isSelected = selectedSubjects.includes(subject.subjectId.toString());
           
           return (
             <button
-              key={subject.id}
+              key={subject.subjectId}
               type="button"
-              onClick={() => handleSubjectToggle(subject.id)}
+              onClick={() => handleSubjectToggle(subject.subjectId.toString())}
               className={`p-4 rounded-lg border transition-all text-left ${
                 isSelected 
                   ? 'border-green-500 bg-green-50' 
@@ -73,12 +73,14 @@ const TutorSubjects = ({ selectedSubjects, onChange, error }) => {
                       </div>
                     )}
                     <h4 className={`font-medium ${isSelected ? 'text-green-700' : 'text-gray-800'}`}>
-                      {subject.name}
+                      {subject.subjectName}
                     </h4>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {subject.description}
-                  </p>
+                  {subject.subjectDesc && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {subject.subjectDesc}
+                    </p>
+                  )}
                 </div>
               </div>
             </button>
