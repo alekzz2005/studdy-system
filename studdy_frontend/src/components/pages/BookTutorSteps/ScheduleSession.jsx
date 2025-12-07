@@ -17,10 +17,10 @@ const ScheduleSession = ({ formData, onChange, errors, availableSlots, isLoading
       
       <div className="form-group">
         <label htmlFor="sessionDate" className="form-label">
-          Session Date *
+          Session Date <span className="required">*</span>
         </label>
         <div className="input-with-icon">
-          <Calendar size={20} />
+          <span className="input-icon">📅</span>
           <input
             type="date"
             id="sessionDate"
@@ -36,13 +36,13 @@ const ScheduleSession = ({ formData, onChange, errors, availableSlots, isLoading
 
       {formData.sessionDate && (
         <div className="time-selection">
-          <div className="form-row">
-            <div className="form-group">
+          <div className="time-inputs">
+            <div className="time-field">
               <label htmlFor="startTime" className="form-label">
-                Start Time *
+                Start Time <span className="required">*</span>
               </label>
               <div className="input-with-icon">
-                <Clock size={20} />
+                <span className="input-icon">🕐</span>
                 <select
                   id="startTime"
                   name="startTime"
@@ -65,12 +65,12 @@ const ScheduleSession = ({ formData, onChange, errors, availableSlots, isLoading
               {errors.startTime && <span className="error-message">{errors.startTime}</span>}
             </div>
 
-            <div className="form-group">
+            <div className="time-field">
               <label htmlFor="endTime" className="form-label">
-                End Time *
+                End Time <span className="required">*</span>
               </label>
               <div className="input-with-icon">
-                <Clock size={20} />
+                <span className="input-icon">🕐</span>
                 <select
                   id="endTime"
                   name="endTime"
@@ -94,17 +94,6 @@ const ScheduleSession = ({ formData, onChange, errors, availableSlots, isLoading
               {errors.endTime && <span className="error-message">{errors.endTime}</span>}
             </div>
           </div>
-
-          {formData.startTime && formData.endTime && (
-            <div className="session-summary">
-              <h4 className="summary-title">Session Summary</h4>
-              <div className="summary-details">
-                <p><strong>Duration:</strong> {calculateDuration()} hours</p>
-                <p><strong>Date:</strong> {new Date(formData.sessionDate).toLocaleDateString()}</p>
-                <p><strong>Time:</strong> {formData.startTime} - {formData.endTime}</p>
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
