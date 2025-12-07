@@ -19,11 +19,6 @@ public class UserController {
     
     @Autowired
     private UserService userService;
-
-    @GetMapping("/test")
-    public String test() {
-        return "UserController is working!";
-    }
     
     // Register new user
     @PostMapping("/register")

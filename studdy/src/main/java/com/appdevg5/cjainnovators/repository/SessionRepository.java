@@ -6,8 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 @Repository
@@ -21,56 +19,50 @@ public interface SessionRepository extends JpaRepository<SessionEntity, Long> {
     
     List<SessionEntity> findByStatus(String status);
     
-    List<SessionEntity> findBySessionDate(LocalDate sessionDate);
+    List<SessionEntity> findBySessionYearAndSessionMonthAndSessionDay(int year, int month, int day);
     
-    List<SessionEntity> findBySessionDateBetween(LocalDate startDate, LocalDate endDate);
+    List<SessionEntity> findBySessionYearAndSessionMonth(int year, int month);
     
     List<SessionEntity> findByRatingGreaterThanEqual(Float minRating);
     
-    @Query("SELECT s FROM SessionEntity s WHERE s.tutor.tutorId = :tutorId AND s.sessionDate = :date AND s.status != 'CANCELLED'")
-    List<SessionEntity> findTutorSessionsByDate(@Param("tutorId") Long tutorId, @Param("date") LocalDate date);
+    @Query("SELECT s FROM SessionEntity s WHERE s.tutor.tutorId = :tutorId AND s.sessionYear = :year AND s.sessionMonth = :month AND s.sessionDay = :day AND s.status != 'Cancelled'")
+    List<SessionEntity> findTutorSessionsByDate(@Param("tutorId") Long tutorId, 
+                                                @Param("year") int year, 
+                                                @Param("month") int month, 
+                                                @Param("day") int day);
     
     @Query("SELECT s FROM SessionEntity s WHERE s.tutor.tutorId = :tutorId AND s.tutee.tuteeId = :tuteeId")
     List<SessionEntity> findSessionsBetweenTutorAndTutee(@Param("tutorId") Long tutorId, 
                                                          @Param("tuteeId") Long tuteeId);
     
-    @Query("SELECT s FROM SessionEntity s WHERE s.sessionDate = :date AND s.startTime <= :time AND s.endTime >= :time")
-    List<SessionEntity> findOngoingSessions(@Param("date") LocalDate date, 
-                                            @Param("time") LocalTime time);
-    
-    @Query("SELECT s FROM SessionEntity s WHERE s.sessionDate >= :startDate AND s.sessionDate <= :endDate")
-    List<SessionEntity> findSessionsInDateRange(@Param("startDate") LocalDate startDate, 
-                                                @Param("endDate") LocalDate endDate);
-    
-    @Query("SELECT s FROM SessionEntity s WHERE s.tutor.user.school = :school")
+    @Query("SELECT s FROM SessionEntity s " +
+           "WHERE s.tutor.user.school = :school")
     List<SessionEntity> findBySchool(@Param("school") String school);
     
     @Query("SELECT s FROM SessionEntity s " +
            "WHERE s.tutor.tutorId = :tutorId " +
-           "AND s.status = 'COMPLETED' " +
-           "ORDER BY s.sessionDate DESC")
+           "AND s.status = 'Completed' " +
+           "ORDER BY s.sessionYear DESC, s.sessionMonth DESC, s.sessionDay DESC")
     List<SessionEntity> findCompletedSessionsByTutor(@Param("tutorId") Long tutorId);
     
     @Query("SELECT s FROM SessionEntity s " +
            "WHERE s.tutee.tuteeId = :tuteeId " +
-           "AND s.status = 'COMPLETED' " +
-           "ORDER BY s.sessionDate DESC")
+           "AND s.status = 'Completed' " +
+           "ORDER BY s.sessionYear DESC, s.sessionMonth DESC, s.sessionDay DESC")
     List<SessionEntity> findCompletedSessionsByTutee(@Param("tuteeId") Long tuteeId);
     
     @Query("SELECT s FROM SessionEntity s " +
-           "WHERE s.sessionDate = :date " +
-           "AND ((s.startTime BETWEEN :startTime AND :endTime) " +
-           "OR (s.endTime BETWEEN :startTime AND :endTime) " +
-           "OR (:startTime BETWEEN s.startTime AND s.endTime) " +
-           "OR (:endTime BETWEEN s.startTime AND s.endTime))")
-    List<SessionEntity> findOverlappingSessions(@Param("date") LocalDate date,
-                                                @Param("startTime") LocalTime startTime,
-                                                @Param("endTime") LocalTime endTime);
+           "WHERE s.sessionYear = :year AND s.sessionMonth = :month AND s.sessionDay = :day " +
+           "AND s.status NOT IN ('Cancelled', 'Completed')")
+    List<SessionEntity> findActiveSessionsByDate(@Param("year") int year, 
+                                                 @Param("month") int month, 
+                                                 @Param("day") int day);
     
     @Query("SELECT s FROM SessionEntity s " +
            "WHERE s.tutor.tutorId = :tutorId " +
-           "AND s.sessionDate >= :startDate " +
-           "AND s.status = 'COMPLETED'")
-    List<SessionEntity> findCompletedSessionsByTutorAfterDate(@Param("tutorId") Long tutorId,
-                                                              @Param("startDate") LocalDate startDate);
+           "AND s.sessionYear = :year AND s.sessionMonth = :month " +
+           "AND s.status = 'Completed'")
+    List<SessionEntity> findMonthlyCompletedSessionsByTutor(@Param("tutorId") Long tutorId,
+                                                            @Param("year") int year,
+                                                            @Param("month") int month);
 }

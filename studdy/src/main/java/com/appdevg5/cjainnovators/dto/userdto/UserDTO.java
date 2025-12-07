@@ -22,5 +22,7 @@ public class UserDTO {
     private String school;
     private int gradeLevel;
     private String major;
+    private LocalDate dateStarted;
+    private String type; // Tutee or Tutor
     private boolean active;
 }

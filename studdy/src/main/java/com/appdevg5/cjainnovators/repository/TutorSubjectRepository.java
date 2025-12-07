@@ -22,10 +22,6 @@ public interface TutorSubjectRepository extends JpaRepository<TutorSubjectEntity
 
     boolean existsByTutor_TutorIdAndSubject_SubjectId(Long tutorId, Long subjectId);
     
-    @Query("SELECT ts FROM TutorSubjectEntity ts WHERE ts.tutor.tutorId = :tutorId AND ts.proficiencyLevel >= :minLevel")
-    List<TutorSubjectEntity> findByTutorIdAndMinProficiency(@Param("tutorId") Long tutorId, 
-                                                            @Param("minLevel") int minLevel);
-    
     @Transactional
     @Modifying
     @Query("DELETE FROM TutorSubjectEntity ts WHERE ts.tutor.tutorId = :tutorId")

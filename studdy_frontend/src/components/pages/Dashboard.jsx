@@ -139,7 +139,7 @@ const Dashboard = () => {
       },
       {
         id: 3,
-        subject: currentUser.major || 'Chemistry',
+        subject: 'Chemistry',
         tutor: 'John Anthony Besañez',
         date: 'Dec 15 • 4:00 PM - 5:00 PM',
         status: 'pending'

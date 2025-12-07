@@ -12,5 +12,4 @@ import lombok.NoArgsConstructor;
 public class CreateTutorSubjectDTO {
     private Long tutorId;
     private Long subjectId;
-    private int proficiencyLevel;
 }

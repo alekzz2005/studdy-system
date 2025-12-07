@@ -72,6 +72,23 @@ public class SessionController {
         return ResponseEntity.ok(sessionService.getSessionsByStatus(status));
     }
 
+    // READ - Get by date
+    @GetMapping("/date/{year}/{month}/{day}")
+    public ResponseEntity<List<SessionDTO>> getSessionsByDate(
+            @PathVariable int year,
+            @PathVariable int month,
+            @PathVariable int day) {
+        return ResponseEntity.ok(sessionService.getSessionsByDate(year, month, day));
+    }
+
+    // READ - Get by month
+    @GetMapping("/month/{year}/{month}")
+    public ResponseEntity<List<SessionDTO>> getSessionsByMonth(
+            @PathVariable int year,
+            @PathVariable int month) {
+        return ResponseEntity.ok(sessionService.getSessionsByMonth(year, month));
+    }
+
     // UPDATE
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateSession(

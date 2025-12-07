@@ -24,7 +24,8 @@ const RegisterPage = () => {
     major: '',
     address: '',
     bio: '',
-    goals: ''
+    goals: '',
+    type: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);

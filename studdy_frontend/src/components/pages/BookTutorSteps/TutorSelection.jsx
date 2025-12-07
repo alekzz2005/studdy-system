@@ -20,8 +20,8 @@ const TutorSelection = ({ formData, onChange, errors, tutors }) => {
         >
           <option value="">Select a tutor</option>
           {tutors.map(tutor => (
-            <option key={tutor.userId} value={tutor.userId}>
-              {tutor.name} ⭐ {tutor.rating}
+            <option key={tutor.tutorId} value={tutor.tutorId}>
+              {tutor.name} ⭐ {tutor.rating?.toFixed(1) || 'N/A'}
             </option>
           ))}
         </select>
@@ -32,22 +32,21 @@ const TutorSelection = ({ formData, onChange, errors, tutors }) => {
         <div className="tutor-details-card">
           <h4 className="tutor-details-title">Tutor Information</h4>
           {tutors
-            .filter(tutor => tutor.userId === parseInt(formData.tutorId))
+            .filter(tutor => tutor.tutorId === parseInt(formData.tutorId))
             .map(tutor => (
-              <div key={tutor.userId} className="tutor-card">
+              <div key={tutor.tutorId} className="tutor-card">
                 <div className="tutor-avatar">
                   <User size={24} />
                 </div>
                 <div className="tutor-info">
                   <h5 className="tutor-name">{tutor.name}</h5>
                   <div className="tutor-rating">
-                    {/* Use Star with fill prop */}
                     <Star className="star-icon" size={16} fill="#f59e0b" color="#f59e0b" />
-                    <span className="rating-value">{tutor.rating}</span>
+                    <span className="rating-value">{tutor.rating?.toFixed(1) || 'N/A'}</span>
                     <span className="rating-max">/5</span>
                   </div>
                   <p className="tutor-expertise">
-                    Expertise: {tutor.expertise.join(', ')}
+                    Expertise: {Array.isArray(tutor.expertise) ? tutor.expertise.join(', ') : 'Not specified'}
                   </p>
                 </div>
               </div>

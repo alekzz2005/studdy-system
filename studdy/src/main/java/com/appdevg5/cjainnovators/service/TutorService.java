@@ -64,7 +64,6 @@ public class TutorService {
     private TutorSubjectDTO convertToTutorSubjectDTO(TutorSubjectEntity tutorSubject) {
         TutorSubjectDTO dto = new TutorSubjectDTO();
         dto.setTutorSubjectId(tutorSubject.getTutorSubjectId());
-        dto.setProficiencyLevel(tutorSubject.getProficiencyLevel());
         
         if (tutorSubject.getSubject() != null) {
             dto.setSubjectId(tutorSubject.getSubject().getSubjectId());
@@ -101,7 +100,6 @@ public class TutorService {
                 TutorSubjectEntity tutorSubject = TutorSubjectEntity.builder()
                     .tutor(savedTutor)
                     .subject(subject)
-                    .proficiencyLevel(subjectRequest.getProficiencyLevel())
                     .build();
                 
                 tutorSubjectRepository.save(tutorSubject);
@@ -157,7 +155,6 @@ public class TutorService {
                 TutorSubjectEntity tutorSubject = TutorSubjectEntity.builder()
                     .tutor(tutor)
                     .subject(subject)
-                    .proficiencyLevel(subjectRequest.getProficiencyLevel())
                     .build();
                 
                 tutorSubjectRepository.save(tutorSubject);
@@ -197,7 +194,6 @@ public class TutorService {
         TutorSubjectEntity tutorSubject = TutorSubjectEntity.builder()
             .tutor(tutor)
             .subject(subject)
-            .proficiencyLevel(subjectRequest.getProficiencyLevel())
             .build();
         
         TutorSubjectEntity savedSubject = tutorSubjectRepository.save(tutorSubject);

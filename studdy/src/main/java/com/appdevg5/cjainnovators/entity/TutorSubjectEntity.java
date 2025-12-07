@@ -23,7 +23,4 @@ public class TutorSubjectEntity {
     @ManyToOne
     @JoinColumn(name = "subject_id", nullable = false)
     private SubjectEntity subject;
-
-    @Column(nullable = false)
-    private int proficiencyLevel; // 1 - 5 scale
 }

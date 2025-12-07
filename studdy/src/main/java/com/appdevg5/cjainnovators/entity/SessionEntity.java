@@ -2,10 +2,6 @@ package com.appdevg5.cjainnovators.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 @Entity
 @Getter
 @Setter
@@ -34,9 +30,12 @@ public class SessionEntity {
     private String goal;
     private String medium;
     private int duration;
-    private LocalDate sessionDate;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private int sessionMonth;
+    private int sessionDay;
+    private int sessionYear;
+    private int startHour;
+    private int startMinute;
+    private String startAmPm;
     private String status; //Pending, Accepted, Ongoing, Completed, Cancelled
 
     // Optionals

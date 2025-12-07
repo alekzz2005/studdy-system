@@ -4,10 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,9 +16,12 @@ public class SessionDTO {
     private String goal;
     private String medium;
     private Integer duration;
-    private LocalDate sessionDate;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private int sessionMonth;
+    private int sessionDay;
+    private int sessionYear;
+    private int startHour;
+    private int startMinute;
+    private String startAmPm;
     private String status;
     private Float rating;
     private String feedback;
