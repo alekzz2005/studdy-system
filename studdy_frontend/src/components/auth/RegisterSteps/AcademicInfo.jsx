@@ -73,7 +73,7 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
         />
       </div>
 
-      <Textarea
+      {/* <Textarea
         label="Learning Goals"
         name="goals"
         placeholder="What do you want to achieve on Studdy?"
@@ -81,7 +81,7 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
         onChange={handleChange}
         rows={3}
         error={errors.goals}
-      />
+      /> */}
     </div>
   );
 };
