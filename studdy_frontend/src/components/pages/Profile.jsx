@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../dashboard/Header';
 import './styles/Profile.css';
-import Sidebar from '../dashboard/Sidebar';
 import { userAPI, userHelpers } from '../../services/user';
 import { authAPI } from '../../services/auth';
 
@@ -105,214 +104,155 @@ const Profile = () => {
     <div className="profile-container">
       <Header onBookSession={handleBookSession} />
 
-      <div className="main-layout">
-        <Sidebar activePage="Account Settings" />
+      <main className="main-content-full">
+        <div className="content-wrapper">
+          <div className="profile-header">
+            <h1>My Profile</h1>
+            <p>View your personal information and preferences</p>
+          </div>
 
-        <main className="main-content">
-          <div className="content-wrapper">
-            <div className="profile-header">
-              <h2>My Profile</h2>
-              <p>View your personal information and preferences</p>
+          <div className="profile-content">
+            {/* Profile Overview Card */}
+            <div className="profile-overview">
+              <div className="avatar-section">
+                {userData.avatar ? (
+                  <img src={userData.avatar} alt="Profile" className="avatar-image" />
+                ) : (
+                  <div className="avatar-placeholder-large">
+                    {getInitials()}
+                  </div>
+                )}
+                <div className="user-info">
+                  <h2>{userData.firstName || ''} {userData.lastName || ''}</h2>
+                  <p className="role">{userData.type || 'User'}</p>
+                  <p className="email">{userData.email || 'No email'}</p>
+                </div>
+              </div>
+
+              <div className="quick-stats">
+                <h3>Learning Progress</h3>
+                <div className="stats-grid">
+                  <div className="stat-card">
+                    <div className="stat-label">Sessions Completed</div>
+                    <div className="stat-value">
+                      {userData.stats?.sessionsCompleted || 0}
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-label">Hours Studied</div>
+                    <div className="stat-value">
+                      {userData.stats?.hoursStudied || 0}h
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-label">Average Rating</div>
+                    <div className="stat-value">
+                      {userData.stats?.averageRating ? `${userData.stats.averageRating} ⭐` : 'No ratings'}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="profile-grid">
-              {/* Profile Card */}
-              <div className="profile-card">
-                <div className="avatar">
-                  {userData.avatar ? (
-                    <img src={userData.avatar} alt="Profile" className="avatar-image" />
-                  ) : (
-                    <div className="avatar-placeholder">
-                      {getInitials()}
+            {/* Information Sections */}
+            <div className="info-sections">
+              {/* Personal Information */}
+              <div className="info-section-card">
+                <h3>Personal Information</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <label>First Name</label>
+                    <div className="info-value">
+                      {userData.firstName || 'Not provided'}
                     </div>
-                  )}
-                </div>
-                <h3>{userData.firstName || ''} {userData.lastName || ''}</h3>
-                <p className="role">{userData.type || 'User'}</p>
-                <p className="email">{userData.email || 'No email'}</p>
-
-                <div className="progress-stats">
-                  <h4>Learning Progress</h4>
-                  <div className="stats-grid">
-                    <div className="stat-item">
-                      <span>Sessions Completed</span>
-                      <span className="stat-value">
-                        {userData.stats?.sessionsCompleted || 0}
-                      </span>
+                  </div>
+                  <div className="info-item">
+                    <label>Last Name</label>
+                    <div className="info-value">
+                      {userData.lastName || 'Not provided'}
                     </div>
-                    <div className="stat-item">
-                      <span>Hours Studied</span>
-                      <span className="stat-value">
-                        {userData.stats?.hoursStudied || 0}h
-                      </span>
+                  </div>
+                  <div className="info-item">
+                    <label>Email</label>
+                    <div className="info-value">
+                      {userData.email || 'Not provided'}
                     </div>
-                    <div className="stat-item">
-                      <span>Average Rating</span>
-                      <span className="stat-value">
-                        {userData.stats?.averageRating ? `${userData.stats.averageRating} ⭐` : 'No ratings'}
-                      </span>
+                  </div>
+                  <div className="info-item">
+                    <label>Phone Number</label>
+                    <div className="info-value">
+                      {formatPhone(userData.phoneNumber)}
+                    </div>
+                  </div>
+                  <div className="info-item">
+                    <label>Date of Birth</label>
+                    <div className="info-value">
+                      {formatDate(userData.dateOfBirth)}
+                    </div>
+                  </div>
+                  <div className="info-item full-width">
+                    <label>Address</label>
+                    <div className="info-value">
+                      {userData.address || 'Not provided'}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Information Section */}
-              <div className="info-section">
-                {/* Personal Information */}
-                <div className="info-card">
-                  <h4>Personal Information</h4>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label>First Name</label>
-                      <div className="readonly-field">
-                        {userData.firstName || 'Not provided'}
-                      </div>
+              {/* Academic Information */}
+              <div className="info-section-card">
+                <h3>Academic Information</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <label>School</label>
+                    <div className="info-value">
+                      {userData.school || 'Not provided'}
                     </div>
-                    <div className="form-group">
-                      <label>Last Name</label>
-                      <div className="readonly-field">
-                        {userData.lastName || 'Not provided'}
-                      </div>
+                  </div>
+                  <div className="info-item">
+                    <label>Grade Level</label>
+                    <div className="info-value">
+                      {userData.gradeLevel || 'Not provided'}
                     </div>
-                    <div className="form-group">
-                      <label>Email</label>
-                      <div className="readonly-field">
-                        {userData.email || 'Not provided'}
-                      </div>
-                    </div>
-                    <div className="form-group">
-                      <label>Phone Number</label>
-                      <div className="readonly-field">
-                        {formatPhone(userData.phoneNumber)}
-                      </div>
-                    </div>
-                    <div className="form-group">
-                      <label>Date of Birth</label>
-                      <div className="readonly-field">
-                        {formatDate(userData.dateOfBirth)}
-                      </div>
-                    </div>
-                    <div className="form-group full-width">
-                      <label>Address</label>
-                      <div className="readonly-field">
-                        {userData.address || 'Not provided'}
-                      </div>
-                    </div>
-                    <div className="form-group full-width">
-                      <label>Bio</label>
-                      <div className="readonly-field bio-text">
-                        {userData.bio || 'No bio provided'}
-                      </div>
+                  </div>
+                  <div className="info-item full-width">
+                    <label>Major/Field of Study</label>
+                    <div className="info-value">
+                      {userData.major || 'Not provided'}
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Academic Information */}
-                <div className="info-card">
-                  <h4>Academic Information</h4>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label>School</label>
-                      <div className="readonly-field">
-                        {userData.school || 'Not provided'}
-                      </div>
-                    </div>
-                    <div className="form-group">
-                      <label>Grade Level</label>
-                      <div className="readonly-field">
-                        {userData.gradeLevel || 'Not provided'}
-                      </div>
-                    </div>
-                    <div className="form-group full-width">
-                      <label>Major/Field of Study</label>
-                      <div className="readonly-field">
-                        {userData.major || 'Not provided'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Notification Preferences */}
-                <div className="info-card">
-                  <h4>Notification Preferences</h4>
-                  <div className="notification-list">
-                    <div className="notification-item">
-                      <div>
-                        <p className="notification-title">Upcoming Sessions</p>
-                        <p className="notification-desc">Get reminders for upcoming tutoring sessions</p>
-                      </div>
-                      <label className="toggle-switch">
-                        <input 
-                          type="checkbox" 
-                          checked={notificationSettings.upcomingSessions}
-                          onChange={() => toggleNotification('upcomingSessions')}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-                    
-                    <div className="notification-item">
-                      <div>
-                        <p className="notification-title">Tutor Messages</p>
-                        <p className="notification-desc">Receive messages from your tutors</p>
-                      </div>
-                      <label className="toggle-switch">
-                        <input 
-                          type="checkbox" 
-                          checked={notificationSettings.tutorMessages}
-                          onChange={() => toggleNotification('tutorMessages')}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-                    
-                    <div className="notification-item">
-                      <div>
-                        <p className="notification-title">Newsletter</p>
-                        <p className="notification-desc">Subscribe to our weekly newsletter</p>
-                      </div>
-                      <label className="toggle-switch">
-                        <input 
-                          type="checkbox" 
-                          checked={notificationSettings.newsletter}
-                          onChange={() => toggleNotification('newsletter')}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Account Settings */}
-                <div className="info-card">
-                  <h4>Account Settings</h4>
-                  <div className="account-actions">
-                    <button 
-                      className="btn-change-password" 
-                      onClick={handleChangePassword}
-                    >
-                      Change Password
-                    </button>
-                    <button 
-                      className="btn-delete-account" 
-                      onClick={handleLogout}
-                    >
-                      Logout
-                    </button>
-                    <button 
-                      className="btn-delete-account" 
-                      onClick={handleDeleteAccount}
-                      disabled={isDeleting}
-                    >
-                      {isDeleting ? 'Deleting...' : 'Delete Account'}
-                    </button>
-                  </div>
+              {/* Account Actions */}
+              <div className="info-section-card">
+                <h3>Account Settings</h3>
+                <div className="account-actions-grid">
+                  <button 
+                    className="btn-action btn-primary" 
+                    onClick={handleChangePassword}
+                  >
+                    Change Password
+                  </button>
+                  <button 
+                    className="btn-action btn-secondary" 
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                  <button 
+                    className="btn-action btn-danger" 
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete Account'}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };
