@@ -41,8 +41,10 @@ const TutorSelection = ({ formData, onChange, errors, tutors }) => {
                 <div className="tutor-info">
                   <h5 className="tutor-name">{tutor.name}</h5>
                   <div className="tutor-rating">
-                    <Star className="star-icon" size={16} />
-                    <span>{tutor.rating}/5</span>
+                    {/* Use Star with fill prop */}
+                    <Star className="star-icon" size={16} fill="#f59e0b" color="#f59e0b" />
+                    <span className="rating-value">{tutor.rating}</span>
+                    <span className="rating-max">/5</span>
                   </div>
                   <p className="tutor-expertise">
                     Expertise: {tutor.expertise.join(', ')}
