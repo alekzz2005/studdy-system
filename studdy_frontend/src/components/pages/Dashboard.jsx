@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
   Clock, 
@@ -20,6 +21,8 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  
   const [currentUser, setCurrentUser] = useState({
     name: 'Student',
     major: 'Computer Science',
@@ -124,7 +127,7 @@ const Dashboard = () => {
   ];
 
   const handleBookSession = () => {
-    alert('Navigate to Book Tutor page');
+    navigate('/book-tutor');
   };
 
   const handleRefreshSessions = () => {
