@@ -3,9 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './components/pages/LandingPage';
 import LoginPage from './components/auth/Login';
 import RegisterPage from './components/auth/Register';
-import Dashboard from './components/pages/Dashboard';
+import Dashboard from './components/dashboard/Dashboard';
 import BookTutor from './components/pages/BookTutor';
-import Sessions from './components/pages/Sessions'; 
 import Profile from './components/pages/Profile'; 
 
 import './styles/index.css';
@@ -36,7 +35,6 @@ function App() {
 
           <Route path="/dashboard" element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
           <Route path="/book-tutor" element={<ProtectedRoute> <BookTutor /> </ProtectedRoute>} />
-          <Route path="/sessions" element={<ProtectedRoute> <Sessions /> </ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
 
           {/* Fallback route */}

@@ -258,6 +258,14 @@ public class TuteeService {
         dto.setTuteeId(tutee.getTuteeId());
         dto.setUserId(tutee.getUser().getUserId());
         dto.setHoursStudied(tutee.getHoursStudied());
+        dto.setUserEmail(tutee.getUser().getEmail());
+        dto.setFirstName(tutee.getUser().getFirstName());
+        dto.setLastName(tutee.getUser().getLastName());
+        dto.setPhoneNumber(tutee.getUser().getPhoneNumber());
+        // Get total sessions 
+        List<SessionEntity> sessions = sessionRepository.findByTutee_TuteeId(tutee.getTuteeId());
+        dto.setTotalSessions(sessions.size());
+        dto.setActive(tutee.getUser().isActive());
         
         return dto;
     }

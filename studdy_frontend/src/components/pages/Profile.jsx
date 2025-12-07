@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../dashboard/Header';
+import Header from '../dashboard/DashboardHeader';
 import './styles/Profile.css';
 import { userAPI, userHelpers } from '../../services/user';
 import { authAPI } from '../../services/auth';
