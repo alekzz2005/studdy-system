@@ -175,9 +175,9 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm mt-4">
+    <header className="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <h1 className="text-3xl font-bold text-green-600 leading-none">Studdy</h1>
           </div>
@@ -186,7 +186,7 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
             {isTutee && (
             <button 
               onClick={() => onBookSession()}
-              className="hidden sm:flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap mb-4"
+              className="hidden sm:flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap"
             >
               <CalendarPlus className="w-5 h-5" />
               <span>Book Session</span>
@@ -281,15 +281,6 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
                       </div>
                     )}
                   </div>
-                  
-                  {/* <div className="p-3 border-t border-gray-200">
-                    <a
-                      href="/notifications"
-                      className="block text-center text-sm text-green-600 hover:text-green-800 font-medium"
-                    >
-                      View all notifications
-                    </a>
-                  </div> */}
                 </div>
               )}
             </div>

@@ -99,96 +99,121 @@ const AcademicInfoCard = ({
   );
 };
 
-const EditForm = ({ formData, handleInputChange, handleSave, handleCancel, saving }) => (
-  <div className="space-y-4">
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        School *
-      </label>
-      <input
-        type="text"
-        name="school"
-        value={formData.school}
-        onChange={handleInputChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-        required
-      />
-    </div>
+const EditForm = ({ formData, handleInputChange, handleSave, handleCancel, saving }) => {
+  const gradeLevelOptions = [
+    { value: '', label: 'Select Grade/Year' },
+    { value: '1', label: '1st Grade' },
+    { value: '2', label: '2nd Grade' },
+    { value: '3', label: '3rd Grade' },
+    { value: '4', label: '4th Grade' },
+    { value: '5', label: '5th Grade' },
+    { value: '6', label: '6th Grade' },
+    { value: '7', label: '7th Grade' },
+    { value: '8', label: '8th Grade' },
+    { value: '9', label: '9th Grade' },
+    { value: '10', label: '10th Grade' },
+    { value: '11', label: '1st Year Senior High' },
+    { value: '12', label: '2nd Year Senior High' },
+    { value: '13', label: '1st Year College' },
+    { value: '14', label: '2nd Year College' },
+    { value: '15', label: '3rd Year College' },
+    { value: '16', label: '4th Year College' }
+  ];
 
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  return (
+    <div className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Grade Level / Year
-        </label>
-        <input
-          type="number"
-          name="gradeLevel"
-          value={formData.gradeLevel}
-          onChange={handleInputChange}
-          min="1"
-          max="12"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Major / Course
+          School *
         </label>
         <input
           type="text"
-          name="major"
-          value={formData.major}
+          name="school"
+          value={formData.school}
           onChange={handleInputChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required
         />
       </div>
-    </div>
 
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Bio
-      </label>
-      <textarea
-        name="bio"
-        value={formData.bio}
-        onChange={handleInputChange}
-        rows="3"
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-        placeholder="Tell us about yourself..."
-      />
-    </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Grade Level / Year
+          </label>
+          <select
+            name="gradeLevel"
+            value={formData.gradeLevel}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          >
+            {gradeLevelOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Major / Course
+          </label>
+          <input
+            type="text"
+            name="major"
+            value={formData.major}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
+      </div>
 
-    <div className="flex items-center space-x-3 pt-2">
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className="flex-1 flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-      >
-        {saving ? (
-          <>
-            <RefreshCw className="w-4 h-4 animate-spin" />
-            <span>Saving...</span>
-          </>
-        ) : (
-          <>
-            <Save className="w-4 h-4" />
-            <span>Save Changes</span>
-          </>
-        )}
-      </button>
-      <button
-        onClick={handleCancel}
-        disabled={saving}
-        className="flex-1 flex items-center justify-center space-x-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-      >
-        <X className="w-4 h-4" />
-        <span>Cancel</span>
-      </button>
-    </div>
-  </div>
-);
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Bio
+        </label>
+        <textarea
+          name="bio"
+          value={formData.bio}
+          onChange={handleInputChange}
+          rows="3"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          placeholder="Tell us about yourself..."
+        />
+      </div>
 
-const ViewContent = ({ user, formatDate }) => (
+      <div className="flex items-center space-x-3 pt-2">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex-1 flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+        >
+          {saving ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              <span>Save Changes</span>
+            </>
+          )}
+        </button>
+        <button
+          onClick={handleCancel}
+          disabled={saving}
+          className="flex-1 flex items-center justify-center space-x-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <X className="w-4 h-4" />
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+  const ViewContent = ({ user, formatDate }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
     <div className="space-y-4">
       <div>
@@ -198,7 +223,7 @@ const ViewContent = ({ user, formatDate }) => (
       <div>
         <p className="text-sm text-gray-500 mb-1">Grade Level / Year</p>
         <p className="font-medium text-gray-900">
-          {user.gradeLevel > 0 ? `Year ${user.gradeLevel}` : 'Not provided'}
+          {getGradeLevelLabel(user.gradeLevel)}
         </p>
       </div>
     </div>
@@ -210,11 +235,43 @@ const ViewContent = ({ user, formatDate }) => (
     </div>
     {user.bio && (
       <div className="sm:col-span-2 pt-4 border-t border-gray-200">
-        <p className="text-sm text-gray-500 mb-2">About Me</p>
+        <p className="text-sm text-gray-500 mb-2">Bio</p>
         <p className="text-gray-700">{user.bio}</p>
       </div>
     )}
   </div>
 );
+  
+
+const getGradeLevelLabel = (gradeLevel) => {
+  if (!gradeLevel) return 'Not provided';
+  
+  const grade = parseInt(gradeLevel);
+  
+  if (grade >= 1 && grade <= 6) {
+    return `${grade}${getOrdinalSuffix(grade)} Grade`;
+  } else if (grade >= 7 && grade <= 10) {
+    return `${grade}${getOrdinalSuffix(grade)} Grade`;
+  } else if (grade === 11) {
+    return '1st Year Senior High';
+  } else if (grade === 12) {
+    return '2nd Year Senior High';
+  } else if (grade === 13) {
+    return '1st Year College';
+  } else if (grade === 14) {
+    return '2nd Year College';
+  } else if (grade === 15) {
+    return '3rd Year College';
+  } else if (grade === 16) {
+    return '4th Year College';
+  }
+  return gradeLevel;
+};
+
+const getOrdinalSuffix = (n) => {
+  const suffixes = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0];
+};
 
 export default AcademicInfoCard;
