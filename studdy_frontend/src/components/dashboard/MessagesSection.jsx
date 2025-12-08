@@ -8,7 +8,7 @@ const MessagesSection = ({ messages, onMessageClick }) => {
 
   // Handle view all messages navigation
   const handleViewAllMessages = () => {
-    navigate('/messagesPage'); // This navigates to your messages page
+    navigate('/messages'); // This navigates to your messages page
   };
 
   return (
@@ -20,7 +20,7 @@ const MessagesSection = ({ messages, onMessageClick }) => {
               <MessageSquare className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Messages</h3>
+              <h3 className="text-lg font-semibold text-gray-900 ">Messages</h3>
               <p className="text-xs text-gray-500">Recent conversations</p>
             </div>
           </div>
