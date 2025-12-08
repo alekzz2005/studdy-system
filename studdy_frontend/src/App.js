@@ -36,7 +36,8 @@ function App() {
 
           <Route path="/dashboard" element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
           <Route path="/book-tutor" element={<ProtectedRoute> <BookTutor /> </ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
+          <Route path="/Profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
+           <Route path="/MessagesPage" element={<ProtectedRoute> <MessagesPage /> </ProtectedRoute>} />
 
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" />} />

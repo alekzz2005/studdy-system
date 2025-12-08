@@ -342,13 +342,6 @@ const RegisterPage = () => {
       icon={GraduationCap}
       size="lg"
     >
-      {/* Debug info - remove this after testing */}
-      <div className="bg-yellow-50 border border-yellow-200 p-2 mb-4 rounded text-sm">
-        <div>Current step: {step}</div>
-        <div>User type: {formData.type || 'Not selected'}</div>
-        <div>Is tutor? {formData.type === 'tutor' ? 'Yes' : 'No'}</div>
-        <div>Step indicator shows: {formData.type === 'tutor' ? '4 steps' : '3 steps'}</div>
-      </div>
       
       <StepIndicator 
         currentStep={step} 
