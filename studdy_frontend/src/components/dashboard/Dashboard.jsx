@@ -459,13 +459,13 @@ const formatSessionTime = (session) => {
               onMessageClick={handleMessageClick}
               onViewAll={handleViewAllMessages}
             />
-            
+            {currentUser.type === 'TUTEE' && (
             <AvailableTutors
               tutors={availableTutors}
               loading={loadingTutors}
               onBookSession={handleBookSession}
               onViewAll={handleViewAllTutors}
-            />
+            />)}
           </div>
         </div>
       </main>

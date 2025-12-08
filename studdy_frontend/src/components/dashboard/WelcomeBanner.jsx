@@ -5,7 +5,7 @@ const WelcomeBanner = ({ currentUser }) => {
   return (
     <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-8 mb-8 text-white shadow-lg">
       <h2 className="text-3xl font-bold mb-2">
-        Welcome back, {currentUser?.firstName || 'Student'}! 👋
+        Welcome back, {currentUser?.firstName || 'Student'}!
       </h2>
       <p className="text-green-50 text-lg">
         {currentUser?.type === 'TUTOR' 

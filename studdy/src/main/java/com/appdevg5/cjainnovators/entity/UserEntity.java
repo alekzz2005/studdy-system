@@ -32,14 +32,13 @@ public class UserEntity {
     
     private String phoneNumber;
     
+    private LocalDate dateStarted;
     private LocalDate dateOfBirth;
     private String address;
     private String bio;
     private String school;
     private int gradeLevel;
     private String major;
-
-    private LocalDate dateStarted;
 
     private String type; //Tutee or Tutor
     
