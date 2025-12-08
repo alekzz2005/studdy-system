@@ -75,15 +75,22 @@ const RegisterPage = () => {
       if (formData.dateOfBirth) {
         const birthDate = new Date(formData.dateOfBirth);
         const today = new Date();
-        const age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
+
+              // Prevent future dates
+        if (birthDate > today) {
+          newErrors.dateOfBirth = 'Date of birth cannot be in the future';
+        } else {
+        // Calculate age
+          const age = today.getFullYear() - birthDate.getFullYear();
+          const monthDiff = today.getMonth() - birthDate.getMonth();
+          
+          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
         
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-          age--;
-        }
-        
-        if (age < 13) {
-          newErrors.dateOfBirth = 'You must be at least 13 years old';
+          if (age < 13) {
+            newErrors.dateOfBirth = 'You must be at least 13 years old';
+          }
         }
       }
     }
