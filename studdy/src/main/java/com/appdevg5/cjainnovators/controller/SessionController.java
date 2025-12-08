@@ -104,7 +104,7 @@ public class SessionController {
     }
 
     // UPDATE status only
-    @PatchMapping("/status/{id}")
+    @PutMapping("/status/{id}")
     public ResponseEntity<?> updateSessionStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> request) {

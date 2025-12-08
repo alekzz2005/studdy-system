@@ -94,28 +94,18 @@ const fetchUpcomingSessions = async () => {
       throw new Error('User not found');
     }
 
-    let typeId;
-    let tutorData = null;
-    let tuteeData = null;
-    
-    // Get tutor/tutee ID and data
-    if (currentUser.type === 'TUTOR') {
-      const tutorResponse = await tutorService.getTutorByUserId(currentUser.userId);
-      tutorData = tutorResponse;
-      typeId = tutorData.tutorId;
-      console.log('Tutor Data:', tutorData);
-    } else {
-      const tuteeResponse = await tuteeService.getTuteeByUserId(currentUser.userId);
-      tuteeData = tuteeResponse;
-      typeId = tuteeData.tuteeId;
-      console.log('Tutee Data:', tuteeData);
-    }
+    console.log('Fetching sessions for user:', {
+      userId: currentUser.userId,
+      userType: currentUser.type
+    });
 
-    // Use the new service method
+    // Use the unified method from sessionService
     const sessions = await sessionService.getUpcomingSessionsForUser(
-      typeId,
+      currentUser.userId,
       currentUser.type
     );
+
+    console.log('Sessions from API:', sessions);
 
     // Transform the data to match the frontend format
     const formattedSessions = await Promise.all(sessions.map(async (session) => {
@@ -126,11 +116,18 @@ const fetchUpcomingSessions = async () => {
         const sessionDate = new Date(
           session.sessionYear,
           session.sessionMonth - 1,
-          session.sessionDay
+          session.sessionDay,
+          session.startHour + (session.startAmPm === 'PM' && session.startHour !== 12 ? 12 : 0),
+          session.startMinute || 0
         );
+        
         const now = new Date();
         const isToday = sessionDate.toDateString() === now.toDateString();
-        const isTomorrow = new Date(now.setDate(now.getDate() + 1)).toDateString() === sessionDate.toDateString();
+        
+        // Create tomorrow's date correctly
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        const isTomorrow = sessionDate.toDateString() === tomorrow.toDateString();
         
         let dateDisplay;
         if (isToday) {
@@ -156,19 +153,16 @@ const fetchUpcomingSessions = async () => {
           }
         }
 
-        // Get tutor/tutee name based on user type
+        // Determine other person's name (tutee for tutor, tutor for tutee)
         let otherPersonName = '';
-        let otherPersonId = null;
         
         if (currentUser.type === 'TUTOR') {
-          // If current user is tutor, show tutee name
+          // For tutor, show tutee name
           if (session.tuteeId) {
             try {
               const tuteeResponse = await tuteeService.getTuteeById(session.tuteeId);
-              otherPersonName = `${tuteeResponse.firstName || ''} ${tuteeResponse.lastName || ''}`.trim() || 'Tutee';
-              otherPersonId = tuteeResponse.userId || session.tuteeId;
-
-              console.log('Other Person (Tutee) Data:', tuteeResponse.firstName, otherPersonId);
+              otherPersonName = `${tuteeResponse.firstName || ''} ${tuteeResponse.lastName || ''}`.trim();
+              console.log('Tutee for tutor session:', tuteeResponse.firstName);
             } catch (err) {
               console.error('Error fetching tutee:', err);
               otherPersonName = 'Tutee';
@@ -177,12 +171,12 @@ const fetchUpcomingSessions = async () => {
             otherPersonName = 'Tutee';
           }
         } else {
-          // If current user is tutee, show tutor name
+          // For tutee, show tutor name
           if (session.tutorId) {
             try {
               const tutorResponse = await tutorService.getTutorById(session.tutorId);
-              otherPersonName = `${tutorResponse.firstName || ''} ${tutorResponse.lastName || ''}`.trim() || 'Tutor';
-              otherPersonId = tutorResponse.userId || session.tutorId;
+              otherPersonName = `${tutorResponse.firstName || ''} ${tutorResponse.lastName || ''}`.trim();
+              console.log('Tutor for tutee session:', tutorResponse.firstName);
             } catch (err) {
               console.error('Error fetching tutor:', err);
               otherPersonName = 'Tutor';
@@ -192,16 +186,25 @@ const fetchUpcomingSessions = async () => {
           }
         }
 
-        return {
-          id: session.sessionId,
+        const sessionData = {
+          id: session.sessionId || session._id,
           subject: subjectName,
-          tutor: otherPersonName,
+          otherPerson: otherPersonName,
           date: dateDisplay,
           status: (session.status || 'pending').toLowerCase(),
-          tutorId: currentUser.type === 'TUTOR' ? currentUser.userId : otherPersonId,
-          tuteeId: currentUser.type === 'TUTOR' ? otherPersonId : currentUser.userId,
-          rawSession: session // Keep original data for reference
+          tutorId: session.tutorId,
+          tuteeId: session.tuteeId,
+          rawSession: session
         };
+
+        // Add specific fields for display compatibility
+        if (currentUser.type === 'TUTEE') {
+          sessionData.tutor = otherPersonName;
+        } else if (currentUser.type === 'TUTOR') {
+          sessionData.tutee = otherPersonName;
+        }
+
+        return sessionData;
       } catch (error) {
         console.error('Error formatting session:', error, session);
         return null;
@@ -212,30 +215,56 @@ const fetchUpcomingSessions = async () => {
     const validSessions = formattedSessions.filter(session => session !== null);
     
     setUpcomingSessions(validSessions);
-    console.log('Formatted Sessions:', validSessions);
-    console.log('Raw Sessions from API:', sessions);
+    console.log('Final formatted sessions:', validSessions);
   } catch (error) {
     console.error('Error fetching sessions:', error);
     
     // Fallback to mock data if API fails (for development)
-    const mockSessions = [
-      {
-        id: 1,
-        subject: 'Mathematics',
-        tutor: 'Alexander Binagatan',
-        date: 'Today • 2:00 PM - 3:00 PM',
-        status: 'confirmed',
-        tutorId: 101
-      },
-      {
-        id: 2,
-        subject: 'Physics',
-        tutor: 'Charry Mae Atamosa',
-        date: 'Tomorrow • 10:00 AM - 11:30 AM',
-        status: 'confirmed',
-        tutorId: 102
-      }
-    ];
+    const mockSessions = currentUser?.type === 'TUTOR' 
+      ? [
+          {
+            id: 1,
+            subject: 'Mathematics',
+            otherPerson: 'John Doe',
+            tutee: 'John Doe',
+            date: 'Today • 2:00 PM - 3:00 PM',
+            status: 'pending',
+            tutorId: currentUser.userId,
+            tuteeId: 201
+          },
+          {
+            id: 2,
+            subject: 'Physics',
+            otherPerson: 'Jane Smith',
+            tutee: 'Jane Smith',
+            date: 'Tomorrow • 10:00 AM - 11:30 AM',
+            status: 'confirmed',
+            tutorId: currentUser.userId,
+            tuteeId: 202
+          }
+        ]
+      : [
+          {
+            id: 1,
+            subject: 'Mathematics',
+            otherPerson: 'Alexander Binagatan',
+            tutor: 'Alexander Binagatan',
+            date: 'Today • 2:00 PM - 3:00 PM',
+            status: 'confirmed',
+            tutorId: 101,
+            tuteeId: currentUser.userId
+          },
+          {
+            id: 2,
+            subject: 'Physics',
+            otherPerson: 'Charry Mae Atamosa',
+            tutor: 'Charry Mae Atamosa',
+            date: 'Tomorrow • 10:00 AM - 11:30 AM',
+            status: 'confirmed',
+            tutorId: 102,
+            tuteeId: currentUser.userId
+          }
+        ];
     
     setUpcomingSessions(mockSessions);
     setError('Using demo data. Real sessions will appear when connected to backend.');
@@ -419,6 +448,8 @@ const formatSessionTime = (session) => {
               loading={loadingSessions}
               onRefresh={handleRefreshSessions}
               onBookSession={handleBookSession}
+              userType={currentUser.type}
+              currentUserId={currentUser.userId}
             />
           </div>
 
