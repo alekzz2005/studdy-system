@@ -14,7 +14,7 @@ const AboutYou = ({ formData, onChange, errors }) => {
         <label className="block text-sm font-medium text-gray-700">
           <div className="flex items-center space-x-2 mb-1">
             <User className="w-4 h-4 text-gray-500" />
-            <span>I am primarily a:</span>
+            <span>User type:</span>
           </div>
         </label>
         <select
@@ -25,7 +25,7 @@ const AboutYou = ({ formData, onChange, errors }) => {
             errors.type ? 'border-red-500' : 'border-gray-300'
           }`}
         >
-          <option value="">Select your primary role</option>
+          <option value="">Select user type</option>
           <option value="tutor">Tutor</option>
           <option value="tutee">Tutee</option>
         </select>

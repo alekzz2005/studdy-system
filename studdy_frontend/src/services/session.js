@@ -57,7 +57,7 @@ export const sessionService = {
 
   // UPDATE status only
   updateSessionStatus: async (id, status) => {
-    const response = await api.patch(`/api/sessions/status/${id}`, { status });
+    const response = await api.put(`/api/sessions/status/${id}`, { status });
     return response.data;
   },
 
@@ -74,33 +74,57 @@ export const sessionService = {
   },
 
   // NEW: Get upcoming sessions for current user
+  // In sessionService.js, update the getUpcomingSessionsForUser method:
   getUpcomingSessionsForUser: async (userId, userType) => {
     try {
       let sessions = [];
       
-      if (userType === 'Tutor') {
-        // For tutors, get sessions where they are the tutor
-        const response = await api.get(`/api/sessions/tutor/${userId}`);
-        sessions = response.data || [];
-      } else {
-        // For students/tutees, get sessions where they are the tutee
-        const response = await api.get(`/api/sessions/tutee/${userId}`);
-        sessions = response.data || [];
+      // Normalize userType to match backend expectations
+      const normalizedUserType = userType.toUpperCase();
+      
+      if (normalizedUserType === 'TUTOR' || normalizedUserType === 'TUTOR') {
+        // First get tutor ID from user ID
+        try {
+          const tutorResponse = await api.get(`/api/tutors/user/${userId}`);
+          if (tutorResponse.data && tutorResponse.data.tutorId) {
+            // For tutors, get sessions where they are the tutor
+            const response = await api.get(`/api/sessions/tutor/${tutorResponse.data.tutorId}`);
+            sessions = response.data || [];
+          }
+        } catch (tutorError) {
+          console.error('Error fetching tutor ID:', tutorError);
+        }
+      } else if (normalizedUserType === 'TUTEE' || normalizedUserType === 'STUDENT') {
+        // First get tutee ID from user ID
+        try {
+          const tuteeResponse = await api.get(`/api/tutees/user/${userId}`);
+          if (tuteeResponse.data && tuteeResponse.data.tuteeId) {
+            // For students/tutees, get sessions where they are the tutee
+            const response = await api.get(`/api/sessions/tutee/${tuteeResponse.data.tuteeId}`);
+            sessions = response.data || [];
+          }
+        } catch (tuteeError) {
+          console.error('Error fetching tutee ID:', tuteeError);
+        }
       }
       
-      // Filter for upcoming sessions (status = 'Accepted' or 'Pending')
+      // Filter for upcoming sessions (status = 'Confirmed' or 'Pending')
       const now = new Date();
       const upcoming = sessions.filter(session => {
+        if (!session || !session.sessionYear || !session.sessionMonth || !session.sessionDay) {
+          return false;
+        }
+        
         const sessionDate = new Date(
           session.sessionYear,
           session.sessionMonth - 1, // JavaScript months are 0-indexed
           session.sessionDay,
           session.startHour + (session.startAmPm === 'PM' ? 12 : 0),
-          session.startMinute
+          session.startMinute || 0
         );
         
         return (
-          (session.status === 'Accepted' || session.status === 'Pending') &&
+          (session.status === 'Confirmed' || session.status === 'Pending' || session.status === 'pending') &&
           sessionDate >= now
         );
       });

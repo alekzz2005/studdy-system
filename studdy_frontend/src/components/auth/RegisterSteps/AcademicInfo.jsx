@@ -68,7 +68,7 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
 
         <InputField
           icon={Target}
-          label="Major/Specialization (Optional)"
+          label="Major"
           type="text"
           name="major"
           placeholder="Information Technology"
