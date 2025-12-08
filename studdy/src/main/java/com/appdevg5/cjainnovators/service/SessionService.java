@@ -1,9 +1,10 @@
 package com.appdevg5.cjainnovators.service;
 
+import com.appdevg5.cjainnovators.dto.notificationdto.NotificationRequestDTO;
 import com.appdevg5.cjainnovators.dto.sessiondto.*;
 import com.appdevg5.cjainnovators.entity.*;
 import com.appdevg5.cjainnovators.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,30 +14,15 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class SessionService {
 
-    @Autowired
     private final SessionRepository sessionRepository;
-    
-    @Autowired
     private final TutorRepository tutorRepository;
-    
-    @Autowired
     private final TuteeRepository tuteeRepository;
-    
-    @Autowired
     private final SubjectRepository subjectRepository;
-
-    public SessionService(
-            SessionRepository sessionRepository,
-            TutorRepository tutorRepository,
-            TuteeRepository tuteeRepository,
-            SubjectRepository subjectRepository) {
-        this.sessionRepository = sessionRepository;
-        this.tutorRepository = tutorRepository;
-        this.tuteeRepository = tuteeRepository;
-        this.subjectRepository = subjectRepository;
-    }
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     // ========== CREATE ==========
     public SessionDTO createSession(CreateSessionDTO createSessionDTO) {
@@ -76,11 +62,274 @@ public class SessionService {
         // Save to database
         SessionEntity savedSession = sessionRepository.save(session);
 
+        // Create notification for tutor about new booking
+        createTutorBookingNotification(savedSession);
+
         // Convert to DTO and return
         return convertToDTO(savedSession);
     }
 
-    // ========== READ ==========
+    // ========== UPDATE ==========
+    public SessionDTO updateSessionStatus(Long sessionId, String status) {
+        SessionEntity session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Session not found with ID: " + sessionId));
+
+        String previousStatus = session.getStatus();
+        session.setStatus(status);
+        SessionEntity updatedSession = sessionRepository.save(session);
+
+        // Create notifications based on status change
+        handleStatusChangeNotifications(session, previousStatus, status);
+
+        return convertToDTO(updatedSession);
+    }
+
+    // Overloaded update method for UpdateSessionDTO
+    public SessionDTO updateSession(Long sessionId, UpdateSessionDTO updateSessionDTO) {
+        SessionEntity session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Session not found with ID: " + sessionId));
+
+        String previousStatus = session.getStatus();
+        
+        // Update fields if provided
+        if (updateSessionDTO.getGoal() != null) {
+            session.setGoal(updateSessionDTO.getGoal());
+        }
+
+        if (updateSessionDTO.getMedium() != null) {
+            session.setMedium(updateSessionDTO.getMedium());
+        }
+
+        if (updateSessionDTO.getDuration() != null) {
+            session.setDuration(updateSessionDTO.getDuration());
+        }
+
+        if (updateSessionDTO.getSessionMonth() != 0) {
+            session.setSessionMonth(updateSessionDTO.getSessionMonth());
+        }
+
+        if (updateSessionDTO.getSessionDay() != 0) {
+            session.setSessionDay(updateSessionDTO.getSessionDay());
+        }
+
+        if (updateSessionDTO.getSessionYear() != 0) {
+            session.setSessionYear(updateSessionDTO.getSessionYear());
+        }
+
+        if (updateSessionDTO.getStartHour() != 0) {
+            session.setStartHour(updateSessionDTO.getStartHour());
+        }
+
+        if (updateSessionDTO.getStartMinute() != 0) {
+            session.setStartMinute(updateSessionDTO.getStartMinute());
+        }
+
+        if (updateSessionDTO.getStartAmPm() != null) {
+            session.setStartAmPm(updateSessionDTO.getStartAmPm());
+        }
+
+        if (updateSessionDTO.getStatus() != null && 
+            !updateSessionDTO.getStatus().equals(previousStatus)) {
+            session.setStatus(updateSessionDTO.getStatus());
+            handleStatusChangeNotifications(session, previousStatus, updateSessionDTO.getStatus());
+        }
+
+        if (updateSessionDTO.getRating() != null) {
+            // Validate rating range (1-5)
+            if (updateSessionDTO.getRating() < 1.0f || updateSessionDTO.getRating() > 5.0f) {
+                throw new IllegalArgumentException("Rating must be between 1.0 and 5.0");
+            }
+            session.setRating(updateSessionDTO.getRating());
+        }
+
+        if (updateSessionDTO.getFeedback() != null) {
+            session.setFeedback(updateSessionDTO.getFeedback());
+        }
+
+        SessionEntity updatedSession = sessionRepository.save(session);
+        return convertToDTO(updatedSession);
+    }
+
+    // ========== NOTIFICATION METHODS ==========
+
+    /**
+     * Create notification for tutor when tutee books a session
+     */
+    private void createTutorBookingNotification(SessionEntity session) {
+        try {
+            // Get the tutor's user entity
+            UserEntity tutorUser = userRepository.findById(session.getTutor().getUser().getUserId())
+                    .orElseThrow(() -> new NoSuchElementException("Tutor user not found"));
+
+            String formattedDateTime = formatSessionDateTime(session);
+            
+            NotificationRequestDTO notification = NotificationRequestDTO.builder()
+                    .userId(tutorUser.getUserId())
+                    .notificationType("SESSION_BOOKING")
+                    .title("New Session Booking")
+                    .message(String.format(
+                            "%s has booked a %s session with you on %s for %d minutes via %s. Goal: %s",
+                            session.getTutee().getUser().getFirstName(),
+                            session.getSubject().getSubjectName(),
+                            formattedDateTime,
+                            session.getDuration(),
+                            session.getMedium(),
+                            session.getGoal()
+                    ))
+                    .build();
+
+            notificationService.createNotification(notification);
+        } catch (Exception e) {
+            // Log error but don't fail the session creation
+            System.err.println("Failed to create tutor booking notification: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Create notification for tutee when tutor accepts booking
+     */
+    private void createTuteeBookingAcceptedNotification(SessionEntity session) {
+        try {
+            UserEntity tuteeUser = userRepository.findById(session.getTutee().getUser().getUserId())
+                    .orElseThrow(() -> new NoSuchElementException("Tutee user not found"));
+
+            String formattedDateTime = formatSessionDateTime(session);
+            
+            NotificationRequestDTO notification = NotificationRequestDTO.builder()
+                    .userId(tuteeUser.getUserId())
+                    .notificationType("SESSION_ACCEPTED")
+                    .title("Session Accepted")
+                    .message(String.format(
+                            "%s has accepted your %s session on %s. Get ready for your %d-minute session via %s!",
+                            session.getTutor().getUser().getFirstName(),
+                            session.getSubject().getSubjectName(),
+                            formattedDateTime,
+                            session.getDuration(),
+                            session.getMedium()
+                    ))
+                    .build();
+
+            notificationService.createNotification(notification);
+        } catch (Exception e) {
+            System.err.println("Failed to create tutee acceptance notification: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Create notification for tutee when tutor declines booking
+     */
+    private void createTuteeBookingDeclinedNotification(SessionEntity session, String reason) {
+        try {
+            UserEntity tuteeUser = userRepository.findById(session.getTutee().getUser().getUserId())
+                    .orElseThrow(() -> new NoSuchElementException("Tutee user not found"));
+
+            String formattedDateTime = formatSessionDateTime(session);
+            
+            NotificationRequestDTO notification = NotificationRequestDTO.builder()
+                    .userId(tuteeUser.getUserId())
+                    .notificationType("SESSION_DECLINED")
+                    .title("Session Declined")
+                    .message(String.format(
+                            "%s has declined your %s session on %s. %s",
+                            session.getTutor().getUser().getFirstName(),
+                            session.getSubject().getSubjectName(),
+                            formattedDateTime,
+                            reason != null ? "Reason: " + reason : ""
+                    ))
+                    .build();
+
+            notificationService.createNotification(notification);
+        } catch (Exception e) {
+            System.err.println("Failed to create tutee decline notification: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Create notification for tutee when tutor cancels confirmed booking
+     */
+    private void createTuteeBookingCancelledNotification(SessionEntity session, String reason) {
+        try {
+            UserEntity tuteeUser = userRepository.findById(session.getTutee().getUser().getUserId())
+                    .orElseThrow(() -> new NoSuchElementException("Tutee user not found"));
+
+            String formattedDateTime = formatSessionDateTime(session);
+            
+            NotificationRequestDTO notification = NotificationRequestDTO.builder()
+                    .userId(tuteeUser.getUserId())
+                    .notificationType("SESSION_CANCELLED")
+                    .title("Session Cancelled")
+                    .message(String.format(
+                            "%s has cancelled your %s session on %s. %s",
+                            session.getTutor().getUser().getFirstName(),
+                            session.getSubject().getSubjectName(),
+                            formattedDateTime,
+                            reason != null ? "Reason: " + reason : ""
+                    ))
+                    .build();
+
+            notificationService.createNotification(notification);
+        } catch (Exception e) {
+            System.err.println("Failed to create tutee cancellation notification: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle status change notifications
+     */
+    private void handleStatusChangeNotifications(SessionEntity session, String previousStatus, String newStatus) {
+        if ("Pending".equals(previousStatus) && "Confirmed".equals(newStatus)) {
+            // Tutor accepted the booking
+            createTuteeBookingAcceptedNotification(session);
+        } 
+        else if ("Pending".equals(previousStatus) && "Declined".equals(newStatus)) {
+            // Tutor declined the booking
+            createTuteeBookingDeclinedNotification(session, "Tutor declined the booking");
+        }
+        else if ("Confirmed".equals(previousStatus) && "Cancelled".equals(newStatus)) {
+            // Tutor cancelled a confirmed booking
+            createTuteeBookingCancelledNotification(session, "Tutor cancelled the session");
+        }
+        else if ("Pending".equals(previousStatus) && "Cancelled".equals(newStatus)) {
+            // Booking was cancelled (by either party before confirmation)
+            // You might want to add logic here if needed
+        }
+    }
+
+    /**
+     * Format session date and time for notification messages
+     */
+    private String formatSessionDateTime(SessionEntity session) {
+        String monthName = getMonthName(session.getSessionMonth());
+        String amPm = "AM".equalsIgnoreCase(session.getStartAmPm()) ? "AM" : "PM";
+        
+        return String.format("%s %d, %d at %d:%02d %s",
+                monthName,
+                session.getSessionDay(),
+                session.getSessionYear(),
+                session.getStartHour(),
+                session.getStartMinute(),
+                amPm
+        );
+    }
+
+    /**
+     * Get month name from month number
+     */
+    private String getMonthName(int month) {
+        String[] monthNames = {
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        };
+        
+        if (month < 1 || month > 12) {
+            return "Month " + month;
+        }
+        return monthNames[month - 1];
+    }
+
+    // ========== REST OF THE METHODS (unchanged) ==========
     public SessionDTO getSessionById(Long sessionId) {
         SessionEntity session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NoSuchElementException(
@@ -137,81 +386,6 @@ public class SessionService {
                 .collect(Collectors.toList());
     }
 
-    // ========== UPDATE ==========
-    public SessionDTO updateSession(Long sessionId, UpdateSessionDTO updateSessionDTO) {
-        SessionEntity session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Session not found with ID: " + sessionId));
-
-        // Update fields if provided
-        if (updateSessionDTO.getGoal() != null) {
-            session.setGoal(updateSessionDTO.getGoal());
-        }
-
-        if (updateSessionDTO.getMedium() != null) {
-            session.setMedium(updateSessionDTO.getMedium());
-        }
-
-        if (updateSessionDTO.getDuration() != null) {
-            session.setDuration(updateSessionDTO.getDuration());
-        }
-
-        if (updateSessionDTO.getSessionMonth() != 0) {
-            session.setSessionMonth(updateSessionDTO.getSessionMonth());
-        }
-
-        if (updateSessionDTO.getSessionDay() != 0) {
-            session.setSessionDay(updateSessionDTO.getSessionDay());
-        }
-
-        if (updateSessionDTO.getSessionYear() != 0) {
-            session.setSessionYear(updateSessionDTO.getSessionYear());
-        }
-
-        if (updateSessionDTO.getStartHour() != 0) {
-            session.setStartHour(updateSessionDTO.getStartHour());
-        }
-
-        if (updateSessionDTO.getStartMinute() != 0) {
-            session.setStartMinute(updateSessionDTO.getStartMinute());
-        }
-
-        if (updateSessionDTO.getStartAmPm() != null) {
-            session.setStartAmPm(updateSessionDTO.getStartAmPm());
-        }
-
-        if (updateSessionDTO.getStatus() != null) {
-            session.setStatus(updateSessionDTO.getStatus());
-        }
-
-        if (updateSessionDTO.getRating() != null) {
-            // Validate rating range (1-5)
-            if (updateSessionDTO.getRating() < 1.0f || updateSessionDTO.getRating() > 5.0f) {
-                throw new IllegalArgumentException("Rating must be between 1.0 and 5.0");
-            }
-            session.setRating(updateSessionDTO.getRating());
-        }
-
-        if (updateSessionDTO.getFeedback() != null) {
-            session.setFeedback(updateSessionDTO.getFeedback());
-        }
-
-        SessionEntity updatedSession = sessionRepository.save(session);
-        return convertToDTO(updatedSession);
-    }
-
-    // Update session status only
-    public SessionDTO updateSessionStatus(Long sessionId, String status) {
-        SessionEntity session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Session not found with ID: " + sessionId));
-
-        session.setStatus(status);
-        SessionEntity updatedSession = sessionRepository.save(session);
-        return convertToDTO(updatedSession);
-    }
-
-    // Add rating and feedback to session
     public SessionDTO addSessionRating(Long sessionId, Float rating, String feedback) {
         SessionEntity session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NoSuchElementException(
@@ -233,7 +407,6 @@ public class SessionService {
         return convertToDTO(updatedSession);
     }
 
-    // ========== DELETE ==========
     public void deleteSession(Long sessionId) {
         if (!sessionRepository.existsById(sessionId)) {
             throw new NoSuchElementException("Session not found with ID: " + sessionId);
@@ -241,7 +414,6 @@ public class SessionService {
         sessionRepository.deleteById(sessionId);
     }
 
-    // ========== HELPER METHODS ==========
     private SessionDTO convertToDTO(SessionEntity session) {
         return SessionDTO.builder()
                 .sessionId(session.getSessionId())
@@ -263,12 +435,10 @@ public class SessionService {
                 .build();
     }
 
-    // Check if session exists
     public boolean sessionExists(Long sessionId) {
         return sessionRepository.existsById(sessionId);
     }
 
-    // Get session count
     public long getSessionCount() {
         return sessionRepository.count();
     }
