@@ -70,10 +70,16 @@ export const userAPI = {
   },
 
   // Get current user info from token
+  // Get current user info from token (enhanced version)
   getCurrentUser: async () => {
     try {
       const response = await api.get('/api/users/me');
-      return response.data;
+      // Check the response structure
+      if (response.data && response.data.success) {
+        return response.data.user;
+      } else {
+        throw new Error(response.data?.message || 'Failed to get current user');
+      }
     } catch (error) {
       console.error('Error getting current user:', error);
       throw error;
@@ -89,7 +95,37 @@ export const userAPI = {
       console.error('Error testing user connection:', error);
       throw error;
     }
-  }
+  },
+
+  // Get user profile with all related data (updated)
+  getUserProfile: async (userId) => {
+    try {
+      const response = await api.get(`/api/users/profile/${userId}`);
+      if (response.data && response.data.success) {
+        return response.data.profile;
+      } else {
+        throw new Error(response.data?.message || 'Failed to get user profile');
+      }
+    } catch (error) {
+      console.error(`Error fetching user profile ${userId}:`, error);
+      throw error;
+    }
+  },
+
+  // Update user profile (updated)
+  updateUserProfile: async (userId, profileData) => {
+    try {
+      const response = await api.put(`/api/users/profile/${userId}`, profileData);
+      if (response.data && response.data.success) {
+        return response.data.user;
+      } else {
+        throw new Error(response.data?.message || 'Failed to update user profile');
+      }
+    } catch (error) {
+      console.error(`Error updating user profile ${userId}:`, error);
+      throw error;
+    }
+  },
 };
 
 // Helper functions for user management
@@ -139,6 +175,70 @@ export const userHelpers = {
       return user.type || null;
     }
     return null;
+  },
+
+  // Get user from localStorage
+  getStoredUser: () => {
+    try {
+      const userData = localStorage.getItem('userData');
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error('Error getting stored user:', error);
+      return null;
+    }
+  },
+
+  // Get user ID from localStorage
+  getUserId: () => {
+    const user = userHelpers.getStoredUser();
+    return user?.id || user?.userId || null;
+  },
+
+  // Format user data for profile
+  formatUserForProfile: (user) => {
+    if (!user) return null;
+    
+    return {
+      userId: user.id || user.userId,
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email || '',
+      phoneNumber: user.phoneNumber || '',
+      dateOfBirth: user.dateOfBirth || '',
+      address: user.address || '',
+      school: user.school || '',
+      gradeLevel: user.gradeLevel || '',
+      major: user.major || '',
+      bio: user.bio || '',
+      type: user.type || 'TUTEE',
+      dateStarted: user.createdAt || user.dateStarted || new Date().toISOString(),
+      active: user.isActive !== false
+    };
+  },
+
+  // Check if user has completed profile
+  hasCompleteProfile: (user) => {
+    if (!user) return false;
+    
+    const requiredFields = ['firstName', 'lastName', 'email', 'school'];
+    return requiredFields.every(field => user[field] && user[field].trim());
+  },
+
+  // Get profile completion percentage
+  getProfileCompletion: (user) => {
+    if (!user) return 0;
+    
+    const fields = [
+      'firstName', 'lastName', 'email', 'phoneNumber', 
+      'dateOfBirth', 'address', 'school', 'gradeLevel', 
+      'major', 'bio'
+    ];
+    
+    const completed = fields.filter(field => 
+      user[field] && user[field].toString().trim()
+    ).length;
+    
+    return Math.round((completed / fields.length) * 100);
   }
 };
 

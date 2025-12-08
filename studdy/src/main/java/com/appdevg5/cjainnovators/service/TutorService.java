@@ -87,6 +87,7 @@ public class TutorService {
         TutorEntity tutor = TutorEntity.builder()
             .user(user)
             .averageRating(0.0f)
+            .isAvailable(true)
             .build();
         
         TutorEntity savedTutor = tutorRepository.save(tutor);

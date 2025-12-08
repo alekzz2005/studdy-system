@@ -1,22 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { School, Edit2, Save, X, RefreshCw } from 'lucide-react';
 
 const AcademicInfoCard = ({
   user,
   editingSection,
   setEditingSection,
-  setSaving,
+  onSave,
   saving,
   setError,
-  setSuccessMessage,
   formatDate
 }) => {
   const [formData, setFormData] = useState({
-    school: user.school,
-    gradeLevel: user.gradeLevel,
-    major: user.major,
-    bio: user.bio
+    school: '',
+    gradeLevel: '',
+    major: '',
+    bio: ''
   });
+
+  // Initialize form data when user data is available
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        school: user.school || '',
+        gradeLevel: user.gradeLevel || '',
+        major: user.major || '',
+        bio: user.bio || ''
+      });
+    }
+  }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -24,36 +35,21 @@ const AcademicInfoCard = ({
   };
 
   const handleSave = async () => {
-    setSaving(true);
-    setError('');
-    
-    try {
-      if (!formData.school) {
-        setError('School is required');
-        setSaving(false);
-        return;
-      }
-
-      // TODO: API call to update academic info
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSuccessMessage('Academic information updated successfully!');
-      setEditingSection(null);
-    } catch (error) {
-      console.error('Error saving academic info:', error);
-      setError('Failed to update academic information');
-    } finally {
-      setSaving(false);
+    if (!formData.school) {
+      setError('School is required');
+      return;
     }
+
+    await onSave(formData);
   };
 
   const handleCancel = () => {
     setEditingSection(null);
     setFormData({
-      school: user.school,
-      gradeLevel: user.gradeLevel,
-      major: user.major,
-      bio: user.bio
+      school: user.school || '',
+      gradeLevel: user.gradeLevel || '',
+      major: user.major || '',
+      bio: user.bio || ''
     });
   };
 
@@ -213,12 +209,12 @@ const EditForm = ({ formData, handleInputChange, handleSave, handleCancel, savin
   );
 };
 
-  const ViewContent = ({ user, formatDate }) => (
+const ViewContent = ({ user, formatDate }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
     <div className="space-y-4">
       <div>
         <p className="text-sm text-gray-500 mb-1">School</p>
-        <p className="font-medium text-gray-900">{user.school}</p>
+        <p className="font-medium text-gray-900">{user.school || 'Not provided'}</p>
       </div>
       <div>
         <p className="text-sm text-gray-500 mb-1">Grade Level / Year</p>
@@ -230,7 +226,7 @@ const EditForm = ({ formData, handleInputChange, handleSave, handleCancel, savin
     <div className="space-y-4">
       <div>
         <p className="text-sm text-gray-500 mb-1">Major / Course</p>
-        <p className="font-medium text-gray-900">{user.major}</p>
+        <p className="font-medium text-gray-900">{user.major || 'Not provided'}</p>
       </div>
     </div>
     {user.bio && (
@@ -241,7 +237,6 @@ const EditForm = ({ formData, handleInputChange, handleSave, handleCancel, savin
     )}
   </div>
 );
-  
 
 const getGradeLevelLabel = (gradeLevel) => {
   if (!gradeLevel) return 'Not provided';

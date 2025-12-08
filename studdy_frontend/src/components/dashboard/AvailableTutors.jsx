@@ -46,9 +46,35 @@ const AvailableTutors = ({ tutors, loading, onBookSession, onViewAll }) => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-gray-900 text-sm truncate">{tutor.name}</h4>
-                      <p className="text-xs text-gray-600 truncate">{tutor.subject}</p>
+                      
+                      {/* Display multiple subjects as tags */}
+                      <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                        {tutor.allSubjects && tutor.allSubjects.length > 0 ? (
+                          <>
+                            {tutor.allSubjects.slice(0, 3).map((subject, index) => (
+                              <span 
+                                key={index} 
+                                className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded border border-green-200"
+                              >
+                                {subject.subjectName || subject.name}
+                              </span>
+                            ))}
+                            {tutor.allSubjects.length > 3 && (
+                              <span className="text-xs text-gray-500">
+                                +{tutor.allSubjects.length - 3} more
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded border border-green-200">
+                            {tutor.subject || 'General'}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Major and rating */}
                       {tutor.major && (
-                        <p className="text-xs text-gray-500 truncate">{tutor.major}</p>
+                        <p className="text-xs text-gray-500 truncate mb-1">{tutor.major}</p>
                       )}
                       <div className="flex items-center space-x-1 mt-1">
                         <Star className="w-3 h-3 text-yellow-500 fill-current" />

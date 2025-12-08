@@ -7,6 +7,7 @@ import { sessionService } from '../../services/session';
 import { tuteeService } from '../../services/tutee';
 import { tutorService } from '../../services/tutor';
 import { subjectService } from '../../services/subject';
+import { tutorSubjectService } from '../../services/tutorsubject';
 
 import DashboardHeader from './DashboardHeader';
 import WelcomeBanner from './WelcomeBanner';
@@ -328,33 +329,71 @@ const formatSessionTime = (session) => {
 };
 
 
-  const fetchAvailableTutors = async () => {
-    setLoadingTutors(true);
-    try {
-      const response = await userAPI.getAllUsers();
-      if (response.success) {
-        const tutors = response.users.filter(user => 
-          user.type === 'Tutor' && user.active === true
-        ).map(tutor => ({
-          id: tutor.userId,
-          name: `${tutor.firstName} ${tutor.lastName}`,
-          subject: tutor.major || 'General',
-          rating: '4.8',
-          email: tutor.email,
-          phone: tutor.phoneNumber,
-          major: tutor.major,
-          school: tutor.school,
-          bio: tutor.bio
-        }));
-        setAvailableTutors(tutors);
-      }
-    } catch (error) {
-      console.error('Error fetching tutors:', error);
-      setError('Failed to load tutors');
-    } finally {
-      setLoadingTutors(false);
+const fetchAvailableTutors = async () => {
+  setLoadingTutors(true);
+  try {
+    const response = await userAPI.getAllUsers();
+    if (response.success) {
+      const allTutors = response.users.filter(user => 
+        user.type === 'TUTOR' && user.active === true
+      );
+      
+      const tutorsWithSubjects = await Promise.all(
+        allTutors.map(async (user) => {
+          let tutorId = null;
+          let subjects = [];
+          
+          try {
+            // Get tutor record using userId
+            const tutorResponse = await tutorService.getTutorByUserId(user.userId);
+            
+            // If response is an object with tutorId, use it directly
+            if (tutorResponse && tutorResponse.tutorId) {
+              tutorId = tutorResponse.tutorId;
+            } else {
+              // Otherwise, assume the response IS the tutor object
+              tutorId = tutorResponse?.tutorId || null;
+            }
+            
+            if (tutorId) {
+              // Get subjects for this tutor
+              const subjectsResponse = await tutorSubjectService.getSubjectsByTutorId(tutorId);
+              subjects = subjectsResponse.subjects || subjectsResponse || [];
+            }
+          } catch (error) {
+            console.error(`Error fetching tutor data for user ${user.userId}:`, error);
+          }
+          
+          // Get primary subject
+          const primarySubject = subjects.length > 0 
+            ? subjects[0].subjectName || subjects[0].name || 'General'
+            : user.major || 'General';
+          
+          return {
+            id: user.userId,
+            tutorId: tutorId,
+            name: `${user.firstName} ${user.lastName}`,
+            subject: primarySubject,
+            allSubjects: subjects,
+            rating: '4.8',
+            email: user.email,
+            phone: user.phoneNumber,
+            major: user.major,
+            school: user.school,
+            bio: user.bio
+          };
+        })
+      );
+      
+      setAvailableTutors(tutorsWithSubjects);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching tutors:', error);
+    setError('Failed to load tutors');
+  } finally {
+    setLoadingTutors(false);
+  }
+};
 
   const fetchMessages = async () => {
     try {
