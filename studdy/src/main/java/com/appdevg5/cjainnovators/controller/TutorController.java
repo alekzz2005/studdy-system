@@ -60,7 +60,7 @@ public class TutorController {
         return ResponseEntity.ok(tutorService.getAllTutors());
     }
     
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<?> updateTutor(@PathVariable Long id, @RequestBody UpdateTutorDTO updateTutorDTO) {
         try {
             TutorDTO updatedTutor = tutorService.updateTutor(id, updateTutorDTO);

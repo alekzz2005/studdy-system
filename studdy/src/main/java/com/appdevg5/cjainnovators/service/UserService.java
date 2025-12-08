@@ -1,7 +1,12 @@
 package com.appdevg5.cjainnovators.service;
 
+import com.appdevg5.cjainnovators.dto.sessiondto.SessionDTO;
+import com.appdevg5.cjainnovators.dto.subjectdto.SubjectDTO;
 import com.appdevg5.cjainnovators.dto.tuteedto.CreateTuteeDTO;
+import com.appdevg5.cjainnovators.dto.tuteedto.TuteeDTO;
 import com.appdevg5.cjainnovators.dto.tutordto.CreateTutorDTO;
+import com.appdevg5.cjainnovators.dto.tutordto.TutorDTO;
+import com.appdevg5.cjainnovators.dto.tutorsubjectdto.TutorSubjectDTO;
 import com.appdevg5.cjainnovators.dto.userdto.*;
 import com.appdevg5.cjainnovators.entity.UserEntity;
 import com.appdevg5.cjainnovators.repository.UserRepository;
@@ -14,9 +19,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,10 +39,248 @@ public class UserService {
     private TutorService tutorService;
 
     @Autowired
+    private TutorSubjectService tutorSubjectService;
+
+    @Autowired
     private TuteeService tuteeService;
+
+    @Autowired
+    private SubjectService subjectService;
+
+    @Autowired
+    private SessionService sessionService;
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    // Get user profile with all related data
+    public UserProfileDTO getUserProfile(Long userId) {
+        // Get basic user info
+        UserEntity userEntity = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+        
+        UserDTO userDTO = convertToDTO(userEntity);
+        TutorDTO tutorData = null;
+        TuteeDTO tuteeData = null;
+        List<TutorSubjectDTO> tutorSubjects = new ArrayList<>();
+        List<SubjectDTO> availableSubjects = new ArrayList<>();
+        List<SessionDTO> sessions = new ArrayList<>();
+        
+        // Get tutor or tutee data based on user type
+        if ("TUTOR".equalsIgnoreCase(userEntity.getType())) {
+            try {
+                tutorData = tutorService.getTutorByUserId(userId);
+                
+                // Get tutor subjects if tutor exists
+                if (tutorData != null) {
+                    try {
+                        Object tutorId = getTutorIdFromTutorData(tutorData);
+                        if (tutorId != null) {
+                            tutorSubjects = tutorSubjectService.getSubjectsByTutorId((Long) tutorId);
+                            
+                            // Get available subjects (all subjects minus tutor's subjects)
+                            List<SubjectDTO> allSubjects = subjectService.getAllSubjects();
+                            List<Long> tutorSubjectIds = tutorSubjects.stream()
+                                .map(subject -> getSubjectIdFromTutorSubject(subject))
+                                .collect(Collectors.toList());
+                            
+                            availableSubjects = allSubjects.stream()
+                                .filter(subject -> !tutorSubjectIds.contains(getSubjectIdFromSubject(subject)))
+                                .collect(Collectors.toList());
+                            
+                            // Get tutor sessions
+                            sessions = sessionService.getSessionsByTutorId((Long) tutorId);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error fetching tutor-related data: " + e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("No tutor profile found for user: " + userId);
+            }
+        } else if ("TUTEE".equalsIgnoreCase(userEntity.getType()) || "STUDENT".equalsIgnoreCase(userEntity.getType())) {
+            try {
+                tuteeData = tuteeService.getTuteeByUserId(userId);
+                
+                // Get tutee sessions if tutee exists
+                if (tuteeData != null) {
+                    try {
+                        Object tuteeId = getTuteeIdFromTuteeData(tuteeData);
+                        if (tuteeId != null) {
+                            sessions = sessionService.getSessionsByTuteeId((Long) tuteeId);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error fetching tutee sessions: " + e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("No tutee profile found for user: " + userId);
+            }
+        }
+        
+        // Create profile completion stats
+        Map<String, Object> stats = Map.of(
+            "profileCompletion", calculateProfileCompletion(userEntity),
+            "totalSessions", sessions.size(),
+            "activeSessions", countActiveSessions(sessions)
+        );
+        
+        return UserProfileDTO.builder()
+            .user(userDTO)
+            .tutor(tutorData)
+            .tutee(tuteeData)
+            .tutorSubjects(tutorSubjects)
+            .sessions(sessions)
+            .availableSubjects(availableSubjects)
+            .stats(stats)
+            .build();
+    }
+    
+    // Helper method to get tutor ID from tutor data
+    private Long getTutorIdFromTutorData(Object tutorData) {
+        try {
+            if (tutorData instanceof Map) {
+                Map<?, ?> map = (Map<?, ?>) tutorData;
+                Object tutorId = map.get("tutorId");
+                if (tutorId instanceof Number) {
+                    return ((Number) tutorId).longValue();
+                }
+            }
+            // Try reflection or other methods based on your actual TutorDTO class
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    // Helper method to get subject ID from tutor subject
+    private Long getSubjectIdFromTutorSubject(Object tutorSubject) {
+        try {
+            if (tutorSubject instanceof Map) {
+                Map<?, ?> map = (Map<?, ?>) tutorSubject;
+                Object subject = map.get("subject");
+                if (subject instanceof Map) {
+                    Map<?, ?> subjectMap = (Map<?, ?>) subject;
+                    Object subjectId = subjectMap.get("subjectId");
+                    if (subjectId instanceof Number) {
+                        return ((Number) subjectId).longValue();
+                    }
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    // Helper method to get subject ID from subject
+    private Long getSubjectIdFromSubject(Object subject) {
+        try {
+            if (subject instanceof Map) {
+                Map<?, ?> map = (Map<?, ?>) subject;
+                Object subjectId = map.get("subjectId");
+                if (subjectId instanceof Number) {
+                    return ((Number) subjectId).longValue();
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    // Helper method to get tutee ID from tutee data
+    private Long getTuteeIdFromTuteeData(Object tuteeData) {
+        try {
+            if (tuteeData instanceof Map) {
+                Map<?, ?> map = (Map<?, ?>) tuteeData;
+                Object tuteeId = map.get("tuteeId");
+                if (tuteeId instanceof Number) {
+                    return ((Number) tuteeId).longValue();
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    // Calculate profile completion percentage
+    private int calculateProfileCompletion(UserEntity user) {
+        int totalFields = 10;
+        int completedFields = 0;
+        
+        if (user.getFirstName() != null && !user.getFirstName().trim().isEmpty()) completedFields++;
+        if (user.getLastName() != null && !user.getLastName().trim().isEmpty()) completedFields++;
+        if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) completedFields++;
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) completedFields++;
+        if (user.getDateOfBirth() != null) completedFields++;
+        if (user.getAddress() != null && !user.getAddress().trim().isEmpty()) completedFields++;
+        if (user.getSchool() != null && !user.getSchool().trim().isEmpty()) completedFields++;
+        if (user.getGradeLevel() != 0) completedFields++;
+        if (user.getMajor() != null && !user.getMajor().trim().isEmpty()) completedFields++;
+        if (user.getBio() != null && !user.getBio().trim().isEmpty()) completedFields++;
+        
+        return (int) Math.round((completedFields / (double) totalFields) * 100);
+    }
+    
+    // Count active sessions
+    private int countActiveSessions(List<SessionDTO> sessions) {
+        int count = 0;
+        for (SessionDTO session : sessions) {
+            if (session instanceof Map) {
+                Map<?, ?> map = (Map<?, ?>) session;
+                Object status = map.get("status");
+                if ("Confirmed".equals(status) || "Pending".equals(status)) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+    
+    // Update user profile (comprehensive update)
+    public UserDTO updateUserProfile(Long userId, UpdateUserDTO updateUserDTO) {
+        UserEntity userEntity = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+        
+        // Update all fields if provided
+        if (updateUserDTO.getFirstName() != null) {
+            userEntity.setFirstName(updateUserDTO.getFirstName());
+        }
+        if (updateUserDTO.getLastName() != null) {
+            userEntity.setLastName(updateUserDTO.getLastName());
+        }
+        if (updateUserDTO.getPhoneNumber() != null) {
+            userEntity.setPhoneNumber(updateUserDTO.getPhoneNumber());
+        }
+        if (updateUserDTO.getDateOfBirth() != null) {
+            userEntity.setDateOfBirth(updateUserDTO.getDateOfBirth());
+        }
+        if (updateUserDTO.getAddress() != null) {
+            userEntity.setAddress(updateUserDTO.getAddress());
+        }
+        if (updateUserDTO.getBio() != null) {
+            userEntity.setBio(updateUserDTO.getBio());
+        }
+        if (updateUserDTO.getSchool() != null) {
+            userEntity.setSchool(updateUserDTO.getSchool());
+        }
+        if (updateUserDTO.getGradeLevel() != 0) {
+            userEntity.setGradeLevel(updateUserDTO.getGradeLevel());
+        }
+        if (updateUserDTO.getMajor() != null) {
+            userEntity.setMajor(updateUserDTO.getMajor());
+        }
+        
+        // Only update active status if provided
+        if (updateUserDTO.isActive() != userEntity.isActive()) {
+            userEntity.setActive(updateUserDTO.isActive());
+        }
+        
+        UserEntity updatedUser = userRepository.save(userEntity);
+        return convertToDTO(updatedUser);
+    }
     
     // Helper method to convert UserEntity to UserDTO
     private UserDTO convertToDTO(UserEntity user) {
@@ -72,7 +317,7 @@ public class UserService {
             .gradeLevel(dto.getGradeLevel())
             .major(dto.getMajor())
             .type(dto.getType())
-            .dateStarted(dto.getDateStarted())
+            .dateStarted(LocalDate.now()) // Set to current date automatically
             .active(true) // Default to active
             .build();
     }

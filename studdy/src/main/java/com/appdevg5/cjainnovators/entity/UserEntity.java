@@ -51,6 +51,13 @@ public class UserEntity {
     
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private TuteeEntity tutee;
+
+    @PrePersist
+    protected void onCreate() {
+        if (dateStarted == null) {
+            dateStarted = LocalDate.now();
+        }
+    }
     
     public UserEntity(String firstName, String lastName, String email, String password, 
                      String phoneNumber, LocalDate dateOfBirth, String address, 

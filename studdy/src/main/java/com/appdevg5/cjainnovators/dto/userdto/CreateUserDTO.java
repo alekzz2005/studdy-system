@@ -22,6 +22,5 @@ public class CreateUserDTO {
     private String school;
     private int gradeLevel;
     private String major;
-    private LocalDate dateStarted;
     private String type; // Tutee or Tutor
 }

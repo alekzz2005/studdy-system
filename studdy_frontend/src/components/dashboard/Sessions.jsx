@@ -274,13 +274,14 @@ const Sessions = ({ sessions, loading, onRefresh, onBookSession, userType, curre
               <CalendarX className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-gray-500 mb-4">No upcoming sessions scheduled</p>
+            {userType === 'TUTEE' && (
             <button 
               onClick={() => onBookSession()}
               className="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
             >
               <CalendarPlus className="w-5 h-5" />
               <span>Book Your First Session</span>
-            </button>
+            </button>)}
           </div>
         )}
       </div>
