@@ -12,7 +12,8 @@ import {
   User,
   Clock,
   CheckCheck,
-  Check
+  Check,
+  MessageSquare
 } from 'lucide-react';
 
 const MessagesPage = () => {
@@ -21,8 +22,8 @@ const MessagesPage = () => {
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLargeScreen, setIsLargeScreen] = useState(false);
   const messagesEndRef = useRef(null);
+  const textareaRef = useRef(null);
 
   // Mock current user data
   const currentUser = {
@@ -30,26 +31,6 @@ const MessagesPage = () => {
     name: 'John Doe',
     role: 'tutee'
   };
-
-  // Check screen size and handle responsive behavior
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024); // lg breakpoint
-    };
-
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
-
-  // Auto-select first conversation on large screens
-  useEffect(() => {
-    if (isLargeScreen && conversations.length > 0 && !selectedConversation) {
-      setSelectedConversation(conversations[0]);
-      markAsRead(conversations[0].id);
-    }
-  }, [isLargeScreen, conversations, selectedConversation]);
 
   // Mock conversations data - Backend should provide this
   useEffect(() => {
@@ -227,6 +208,15 @@ const MessagesPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedConversation, messages]);
 
+  // Auto-resize textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+    }
+  }, [message]);
+
   // Format timestamp
   const formatTimestamp = (date) => {
     const now = new Date();
@@ -275,7 +265,24 @@ const MessagesPage = () => {
 
     setMessage('');
 
-    // Backend API call would go here
+    // Backend API call would go here:
+    /*
+    try {
+      await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId: selectedConversation.id,
+          senderId: currentUser.id,
+          receiverId: selectedConversation.participant.id,
+          text: message,
+          timestamp: new Date().toISOString()
+        })
+      });
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    }
+    */
   };
 
   // Handle mark as read - Backend endpoint: PUT /api/messages/:id/read
@@ -285,6 +292,15 @@ const MessagesPage = () => {
         ? { ...conv, lastMessage: { ...conv.lastMessage, read: true }, unreadCount: 0 }
         : conv
     ));
+
+    // Backend API call:
+    /*
+    fetch(`/api/conversations/${conversationId}/read`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: currentUser.id })
+    });
+    */
   };
 
   // Filter conversations based on search
@@ -299,11 +315,18 @@ const MessagesPage = () => {
     markAsRead(conv.id);
   };
 
-  // Determine whether to show conversation list
-  const showConversationList = !selectedConversation || isLargeScreen;
+  // Handle back to conversations list
+  const handleBackToList = () => {
+    setSelectedConversation(null);
+  };
 
-  // Determine whether to show chat area
-  const showChatArea = selectedConversation || isLargeScreen;
+  // Handle key press for sending message
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -313,13 +336,35 @@ const MessagesPage = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <button 
-                onClick={() => window.history.back()}
+                onClick={() => {
+                  if (selectedConversation) {
+                    handleBackToList();
+                  } else {
+                    window.history.back();
+                  }
+                }}
                 className="p-2 rounded-lg hover:bg-gray-100"
               >
                 <ArrowLeft className="w-6 h-6 text-gray-600" />
               </button>
-              <h1 className="text-2xl font-bold text-green-600">Messages</h1>
+              <h1 className="text-2xl font-bold text-green-600">
+                {selectedConversation ? selectedConversation.participant.name : 'Messages'}
+              </h1>
             </div>
+            
+            {selectedConversation && (
+              <div className="flex items-center space-x-2 lg:hidden">
+                <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+                  <Phone className="w-5 h-5" />
+                </button>
+                <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+                  <Video className="w-5 h-5" />
+                </button>
+                <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+                  <Info className="w-5 h-5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -327,9 +372,9 @@ const MessagesPage = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" style={{ height: 'calc(100vh - 180px)' }}>
-          <div className="flex h-full">
-            {/* Conversations List - Left Sidebar */}
-            <div className={`${showConversationList ? 'flex' : 'hidden'} w-full lg:w-1/3 xl:w-96 flex-col border-r border-gray-200`}>
+          {/* Conversations List View */}
+          {!selectedConversation ? (
+            <div className="flex flex-col h-full">
               {/* Search Bar */}
               <div className="p-4 border-b border-gray-200">
                 <div className="relative">
@@ -352,8 +397,8 @@ const MessagesPage = () => {
                       key={conv.id}
                       onClick={() => handleSelectConversation(conv)}
                       className={`w-full p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors text-left ${
-                        selectedConversation?.id === conv.id ? 'bg-green-50' : ''
-                      } ${conv.unreadCount > 0 ? 'bg-green-50/30' : ''}`}
+                        conv.unreadCount > 0 ? 'bg-green-50/30' : ''
+                      }`}
                     >
                       <div className="flex items-start space-x-3">
                         <div className="relative flex-shrink-0">
@@ -410,163 +455,157 @@ const MessagesPage = () => {
                       <Search className="w-8 h-8 text-gray-400" />
                     </div>
                     <p className="text-gray-500 text-center">No conversations found</p>
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="mt-2 text-green-600 hover:text-green-700 text-sm"
+                      >
+                        Clear search
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Chat Area - Right Side */}
-            <div className={`${showChatArea ? 'flex' : 'hidden'} lg:flex flex-1 flex-col`}>
-              {selectedConversation ? (
-                <>
-                  {/* Chat Header */}
-                  <div className="p-4 border-b border-gray-200 bg-white">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        {!isLargeScreen && (
-                          <button 
-                            onClick={() => setSelectedConversation(null)}
-                            className="p-2 rounded-lg hover:bg-gray-100"
-                          >
-                            <ArrowLeft className="w-5 h-5 text-gray-600" />
-                          </button>
-                        )}
-                        
-                        <div className="relative">
-                          <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {selectedConversation.participant.avatar}
-                          </div>
-                          {selectedConversation.participant.online && (
-                            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                          )}
-                        </div>
-                        
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{selectedConversation.participant.name}</h3>
-                          <p className="text-xs text-gray-500">
-                            {selectedConversation.participant.online ? 'Online' : 'Offline'} • {selectedConversation.participant.subject}
-                          </p>
-                        </div>
+          ) : (
+            /* Chat View */
+            <div className="flex flex-col h-full">
+              {/* Chat Header */}
+              <div className="p-4 border-b border-gray-200 bg-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={handleBackToList}
+                      className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+                    >
+                      <ArrowLeft className="w-5 h-5 text-gray-600" />
+                    </button>
+                    
+                    <div className="relative">
+                      <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        {selectedConversation.participant.avatar}
                       </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
-                          <Phone className="w-5 h-5" />
-                        </button>
-                        <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
-                          <Video className="w-5 h-5" />
-                        </button>
-                        <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
-                          <Info className="w-5 h-5" />
-                        </button>
-                      </div>
+                      {selectedConversation.participant.online && (
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{selectedConversation.participant.name}</h3>
+                      <p className="text-xs text-gray-500">
+                        {selectedConversation.participant.online ? 'Online' : 'Offline'} • {selectedConversation.participant.subject}
+                      </p>
                     </div>
                   </div>
-
-                  {/* Messages Area */}
-                  <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
-                    {(messages[selectedConversation.id] || []).map((msg, index) => {
-                      const isOwnMessage = msg.senderId === currentUser.id;
-                      const showAvatar = index === 0 || messages[selectedConversation.id][index - 1].senderId !== msg.senderId;
-                      
-                      return (
-                        <div
-                          key={msg.id}
-                          className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} items-end space-x-2`}
-                        >
-                          {!isOwnMessage && (
-                            <div className="w-8 h-8 flex-shrink-0">
-                              {showAvatar && (
-                                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
-                                  {selectedConversation.participant.avatar}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          
-                          <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-md`}>
-                            <div
-                              className={`rounded-2xl px-4 py-2 ${
-                                isOwnMessage
-                                  ? 'bg-green-600 text-white'
-                                  : 'bg-white border border-gray-200 text-gray-900'
-                              }`}
-                            >
-                              <p className="text-sm">{msg.text}</p>
-                            </div>
-                            <div className="flex items-center space-x-1 mt-1 px-2">
-                              <span className="text-xs text-gray-500">
-                                {formatMessageTime(msg.timestamp)}
-                              </span>
-                              {isOwnMessage && (
-                                <span>
-                                  {msg.read ? (
-                                    <CheckCheck className="w-3 h-3 text-green-600" />
-                                  ) : (
-                                    <Check className="w-3 h-3 text-gray-400" />
-                                  )}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {isOwnMessage && <div className="w-8 h-8 flex-shrink-0"></div>}
-                        </div>
-                      );
-                    })}
-                    <div ref={messagesEndRef} />
-                  </div>
-
-                  {/* Message Input */}
-                  <div className="p-4 border-t border-gray-200 bg-white">
-                    <div className="flex items-end space-x-2">
-                      <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 flex-shrink-0">
-                        <Paperclip className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 flex-shrink-0">
-                        <Image className="w-5 h-5" />
-                      </button>
-                      
-                      <div className="flex-1 relative">
-                        <textarea
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              handleSendMessage();
-                            }
-                          }}
-                          placeholder="Type a message..."
-                          rows="1"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                          style={{ minHeight: '44px', maxHeight: '120px' }}
-                        />
-                      </div>
-                      
-                      <button
-                        onClick={handleSendMessage}
-                        disabled={!message.trim()}
-                        className="p-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                      >
-                        <Send className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex items-center justify-center bg-gray-50">
-                  <div className="text-center">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <User className="w-10 h-10 text-gray-400" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Select a conversation</h3>
-                    <p className="text-gray-500">Choose a conversation from the list to start messaging</p>
+                  
+                  <div className="hidden lg:flex items-center space-x-2">
+                    <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+                      <Phone className="w-5 h-5" />
+                    </button>
+                    <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+                      <Video className="w-5 h-5" />
+                    </button>
+                    <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+                      <Info className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-50">
+                {(messages[selectedConversation.id] || []).map((msg, index) => {
+                  const isOwnMessage = msg.senderId === currentUser.id;
+                  const showAvatar = index === 0 || messages[selectedConversation.id][index - 1].senderId !== msg.senderId;
+                  
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} items-end space-x-2`}
+                    >
+                      {!isOwnMessage && (
+                        <div className="w-8 h-8 flex-shrink-0">
+                          {showAvatar && (
+                            <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                              {selectedConversation.participant.avatar}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-xs sm:max-w-sm md:max-w-md`}>
+                        <div
+                          className={`rounded-2xl px-4 py-2 ${
+                            isOwnMessage
+                              ? 'bg-green-600 text-white'
+                              : 'bg-white border border-gray-200 text-gray-900'
+                          }`}
+                        >
+                          <p className="text-sm break-words">{msg.text}</p>
+                        </div>
+                        <div className="flex items-center space-x-1 mt-1 px-2">
+                          <span className="text-xs text-gray-500">
+                            {formatMessageTime(msg.timestamp)}
+                          </span>
+                          {isOwnMessage && (
+                            <span>
+                              {msg.read ? (
+                                <CheckCheck className="w-3 h-3 text-green-600" />
+                              ) : (
+                                <Check className="w-3 h-3 text-gray-400" />
+                              )}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {isOwnMessage && <div className="w-8 h-8 flex-shrink-0"></div>}
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Message Input - FIXED LAYOUT */}
+              <div className="p-4 border-t border-gray-200 bg-white">
+                <div className="flex items-center gap-2">
+                  {/* Attachment buttons - left side */}
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+                      <Paperclip className="w-5 h-5" />
+                    </button>
+                    <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+                      <Image className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  {/* Message input - middle, takes available space */}
+                  <div className="flex-1 min-w-0">
+                    <textarea
+                      ref={textareaRef}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      placeholder="Type a message..."
+                      rows="1"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none min-h-[44px] max-h-[120px]"
+                    />
+                  </div>
+                  
+                  {/* Send button - right side */}
+                  <div className="flex-shrink-0">
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!message.trim()}
+                      className="p-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed h-full flex items-center justify-center"
+                    >
+                      <Send className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>
