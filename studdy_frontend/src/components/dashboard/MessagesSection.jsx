@@ -1,8 +1,15 @@
 import React from 'react';
 import { MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const MessagesSection = ({ messages, onMessageClick, onViewAll }) => {
+const MessagesSection = ({ messages, onMessageClick }) => {
+  const navigate = useNavigate();
   const unreadCount = messages.filter(m => m.unread).length;
+
+  // Handle view all messages navigation
+  const handleViewAllMessages = () => {
+    navigate('/messagesPage'); // This navigates to your messages page
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -27,7 +34,7 @@ const MessagesSection = ({ messages, onMessageClick, onViewAll }) => {
         {messages.map(message => (
           <button
             key={message.id}
-            onClick={() => onMessageClick(message)}
+            onClick={() => onMessageClick ? onMessageClick(message) : navigate(`/messages/${message.id}`)}
             className={`w-full p-4 hover:bg-gray-50 transition-colors text-left ${
               message.unread ? 'bg-green-50' : ''
             }`}
@@ -60,7 +67,7 @@ const MessagesSection = ({ messages, onMessageClick, onViewAll }) => {
 
       <div className="p-4 border-t border-gray-200">
         <button 
-          onClick={onViewAll}
+          onClick={handleViewAllMessages}
           className="w-full px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors font-medium text-sm"
         >
           View All Messages
