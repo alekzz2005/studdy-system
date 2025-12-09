@@ -16,9 +16,9 @@ const Header = ({ navigate }) => {
               <ArrowLeft className="w-6 h-6 text-green-600" />
             </button>
             
-            <h1 className="text-2xl font-semibold text-gray-900 ml-4 mt-5">
-              My Profile
-            </h1>
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-green-600 leading-none pt-5">My Profile</h1>
+            </div>
           </div>
         </div>
       </div>
