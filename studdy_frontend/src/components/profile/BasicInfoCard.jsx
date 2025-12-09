@@ -77,14 +77,17 @@ const BasicInfoCard = ({
               <p className="text-sm text-gray-600">Your personal details</p>
             </div>
           </div>
+          
           {editingSection !== 'basic' && (
-            <button 
-              onClick={() => setEditingSection('basic')}
-              className="flex items-center space-x-2 text-green-600 hover:text-green-700 px-4 py-2 rounded-lg hover:bg-green-50 transition-colors border border-green-200"
-            >
-              <Edit2 className="w-4 h-4" />
-              <span className="text-sm font-medium">Edit</span>
-            </button>
+            <div className="flex-shrink-0">
+              <button 
+                onClick={() => setEditingSection('basic')}
+                className="flex items-center space-x-1.5 text-green-600 hover:text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-50 transition-colors border border-green-200"
+              >
+                <Edit2 className="w-4 h-4" />
+                <span className="text-sm font-medium">Edit</span>
+              </button>
+            </div>
           )}
         </div>
       </div>

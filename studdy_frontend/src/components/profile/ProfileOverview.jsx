@@ -1,11 +1,10 @@
 import React from 'react';
 import { Mail, BookOpen, Star, GraduationCap, RefreshCw } from 'lucide-react';
 
-const ProfileOverview = ({ userProfile }) => {
+const ProfileOverview = ({ userProfile, refreshProfile }) => {
   const { user, tutor, tutorSubjects, sessions } = userProfile;
   const actualUser = user.user;
-  console.log('User Profile: ',userProfile)
-  console.log('Tutor: ',tutor)
+  
   const getInitials = (firstName, lastName) => {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
   };
@@ -23,16 +22,16 @@ const ProfileOverview = ({ userProfile }) => {
         {/* User Info */}
         <div className="flex-1">
           <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-bold text-gray-900 truncate">
                 {actualUser.firstName} {actualUser.lastName}
               </h2>
-              <div className="flex items-center space-x-4 mt-2">
-                <span className="flex items-center text-gray-600">
-                  <Mail className="w-4 h-4 text-green-600 mr-1" />
-                  {actualUser.email}
+              <div className="flex items-center space-x-4 mt-2 flex-wrap">
+                <span className="flex items-center text-gray-600 truncate">
+                  <Mail className="w-4 h-4 text-green-600 mr-1 flex-shrink-0" />
+                  <span className="truncate">{actualUser.email}</span>
                 </span>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                <span className={`px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
                   actualUser.type === 'Tutor' 
                     ? 'bg-green-100 text-green-700' 
                     : 'bg-blue-100 text-blue-700'
@@ -40,6 +39,18 @@ const ProfileOverview = ({ userProfile }) => {
                   {actualUser.type}
                 </span>
               </div>
+            </div>
+            
+            {/* Refresh Button */}
+            <div className="flex-shrink-0 ml-4">
+              <button
+                onClick={refreshProfile}
+                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200 whitespace-nowrap"
+                title="Refresh profile data"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Refresh</span>
+              </button>
             </div>
           </div>
           
