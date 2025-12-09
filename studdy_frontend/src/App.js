@@ -4,7 +4,7 @@ import LandingPage from './components/pages/LandingPage';
 import LoginPage from './components/auth/Login';
 import RegisterPage from './components/auth/Register';
 import Dashboard from './components/dashboard/Dashboard';
-import BookTutor from './components/pages/BookTutor';
+import BookTutor from './components/booktutor/BookTutor';
 import Profile from './components/profile/Profile'; 
 import MessagesPage from './components/pages/MessagesPage';
 

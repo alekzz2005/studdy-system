@@ -1,6 +1,7 @@
 package com.appdevg5.cjainnovators.entity;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,6 +45,9 @@ public class UserEntity {
     
     @Column(name = "is_active")
     private boolean active;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<NotificationEntity> notifications;
     
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private TutorEntity tutor;
