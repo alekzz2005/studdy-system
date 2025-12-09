@@ -44,6 +44,8 @@ public class TutorService {
             dto.setLastName(tutor.getUser().getLastName());
             dto.setPhoneNumber(tutor.getUser().getPhoneNumber());
             dto.setActive(tutor.getUser().isActive());
+            dto.setDateStarted(tutor.getUser().getDateStarted());
+            dto.setAvailable(tutor.isAvailable());
         }
         
         // Convert subjects

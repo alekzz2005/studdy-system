@@ -2,6 +2,32 @@ import React from 'react';
 import { Star, User } from 'lucide-react';
 
 const TutorSelection = ({ formData, onChange, errors, tutors }) => {
+  const getDisplayName = (tutor) => {
+    // Try fullName first, then combine firstName + lastName, fallback to tutor ID
+    if (tutor.fullName && tutor.fullName.trim()) {
+      return tutor.fullName;
+    }
+    if (tutor.firstName || tutor.lastName) {
+      return `${tutor.firstName || ''} ${tutor.lastName || ''}`.trim();
+    }
+    return `Tutor ${tutor.tutorId}`;
+  };
+
+  const getRatingDisplay = (tutor) => {
+    // Use averageRating from DTO, fallback to rating
+    const rating = tutor.averageRating !== undefined ? tutor.averageRating : tutor.rating;
+    return rating ? rating.toFixed(1) : '0.0';
+  };
+
+  const getExpertiseDisplay = (tutor) => {
+    if (Array.isArray(tutor.expertise) && tutor.expertise.length > 0) {
+      return tutor.expertise.join(', ');
+    }
+    return 'Not specified';
+  };
+
+  console.log('Tutors list:', tutors);
+
   return (
     <div className="step-content">
       <h3 className="step-title">Choose Tutor</h3>
@@ -21,7 +47,7 @@ const TutorSelection = ({ formData, onChange, errors, tutors }) => {
           <option value="">Select a tutor</option>
           {tutors.map(tutor => (
             <option key={tutor.tutorId} value={tutor.tutorId}>
-              {tutor.name} ⭐ {tutor.rating?.toFixed(1) || 'N/A'}
+              {getDisplayName(tutor)} ⭐ {getRatingDisplay(tutor)}
             </option>
           ))}
         </select>
@@ -39,15 +65,23 @@ const TutorSelection = ({ formData, onChange, errors, tutors }) => {
                   <User size={24} />
                 </div>
                 <div className="tutor-info">
-                  <h5 className="tutor-name">{tutor.name}</h5>
+                  <h5 className="tutor-name">{getDisplayName(tutor)}</h5>
                   <div className="tutor-rating">
                     <Star className="star-icon" size={16} fill="#f59e0b" color="#f59e0b" />
-                    <span className="rating-value">{tutor.rating?.toFixed(1) || 'N/A'}</span>
-                    <span className="rating-max">/5</span>
+                    <span className="rating-value">{getRatingDisplay(tutor)}</span>
+                    <span className="rating-max">/ 5</span>
                   </div>
                   <p className="tutor-expertise">
-                    Expertise: {Array.isArray(tutor.expertise) ? tutor.expertise.join(', ') : 'Not specified'}
+                    Expertise: {getExpertiseDisplay(tutor)}
                   </p>
+                  <div className="tutor-status">
+                    <span className={`status-badge ${tutor.available ? 'available' : 'unavailable'}`}>
+                      {tutor.available ? 'Available' : 'Unavailable'}
+                    </span>
+                    <span className={`status-badge ${tutor.isActive ? 'active' : 'inactive'}`}>
+                      {tutor.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))

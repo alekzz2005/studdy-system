@@ -111,7 +111,6 @@ const MessagesPage = () => {
 
     setConversations(mockConversations);
 
-    // Mock messages for each conversation - Backend should provide this
     const mockMessages = {
       1: [
         {
