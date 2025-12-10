@@ -2,18 +2,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
-import AuthLayout from '../layout/AuthLayout';
-import Button from '../common/Button';
-import StepIndicator from '../common/StepIndicator';
+import AuthLayout from '../../layout/AuthLayout';
+import Button from '../../common/Button';
+import StepIndicator from '../../common/StepIndicator';
 import BasicInfo from './RegisterSteps/BasicInfo';
 import AcademicInfo from './RegisterSteps/AcademicInfo';
 import AboutYou from './RegisterSteps/AboutYou';
 import TutorSubjects from './RegisterSteps/TutorSubjects';
 
-import { authAPI } from '../../services/auth';
-import { tutorSubjectService } from '../../services/tutorsubject';
-import { subjectService } from '../../services/subject';
-import { tutorService } from '../../services/tutor'; // You'll need to create this
+import { authAPI } from '../../../services/auth';
+import { tutorSubjectService } from '../../../services/tutorsubject';
+import { subjectService } from '../../../services/subject';
+import { tutorService } from '../../../services/tutor';
 
 const RegisterPage = () => {
   const [step, setStep] = useState(1);

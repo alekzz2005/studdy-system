@@ -23,4 +23,5 @@ public class CreateUserDTO {
     private int gradeLevel;
     private String major;
     private String type; // Tutee or Tutor
+    private boolean active;
 }

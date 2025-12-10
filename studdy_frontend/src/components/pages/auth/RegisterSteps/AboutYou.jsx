@@ -1,8 +1,8 @@
 // components/auth/RegisterSteps/AboutYou.jsx
 import React from 'react';
 import { MapPin, User } from 'lucide-react';
-import InputField from '../../common/InputField';
-import Textarea from '../../common/Textarea';
+import InputField from '../../../common/InputField';
+import Textarea from '../../../common/Textarea';
 
 const AboutYou = ({ formData, onChange, errors }) => {
   return (

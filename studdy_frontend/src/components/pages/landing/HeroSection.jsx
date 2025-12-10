@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '../common/Button';
+import Button from '../../common/Button';
 
 // Hero Section Component
 const HeroSection = ({ stats, loading, onFindTutor, onBecomeTutor }) => {

@@ -2,51 +2,48 @@ import React, { useState } from 'react';
 import { BookOpen, Plus, Trash2 } from 'lucide-react';
 
 const TutorSubjectsCard = ({
-  tutor,
+  tutor, // never read
   tutorSubjects,
   availableSubjects,
   editingSection,
   setEditingSection,
-  setSuccessMessage,
-  setError
+  onAddSubject,
+  onRemoveSubject,
+  setError,
 }) => {
   const [selectedSubject, setSelectedSubject] = useState('');
-
+  const [successMessage, setSuccessMessage] = useState('');
   const handleAddSubject = () => {
     if (!selectedSubject) {
       setError('Please select a subject');
       return;
     }
 
-    try {
-      const subjectToAdd = availableSubjects.find(
-        s => s.subjectId === parseInt(selectedSubject)
-      );
-      
-      if (subjectToAdd) {
-        setSuccessMessage('Subject added successfully!');
-        setSelectedSubject('');
-        setEditingSection(null);
-      }
-    } catch (error) {
-      console.error('Error adding subject:', error);
-      setError('Failed to add subject');
-    }
+    // Call the parent's onAddSubject function
+    onAddSubject(selectedSubject);
+    setSelectedSubject('');
+    setEditingSection(null);
   };
 
   const handleRemoveSubject = (tutorSubjectId) => {
     if (!window.confirm('Are you sure you want to remove this subject?')) return;
+    
+    // Call the parent's onRemoveSubject function
+    onRemoveSubject(tutorSubjectId);
+  };
 
-    try {
-      setSuccessMessage('Subject removed successfully!');
-    } catch (error) {
-      console.error('Error removing subject:', error);
-      setError('Failed to remove subject');
-    }
+  // Helper function to get the correct tutorSubjectId
+  const getTutorSubjectId = (tutorSubject) => {
+    return tutorSubject.tutorSubjectId || tutorSubject.id;
   };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      {successMessage && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          {successMessage}
+        </div>
+      )}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -86,17 +83,21 @@ const TutorSubjectsCard = ({
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="">Choose a subject...</option>
-                  {availableSubjects.map(subject => (
-                    <option key={subject.subjectId} value={subject.subjectId}>
-                      {subject.subjectName}
-                    </option>
-                  ))}
+                  {availableSubjects && availableSubjects.length > 0 ? (
+                    availableSubjects.map(subject => (
+                      <option key={subject.subjectId} value={subject.subjectId}>
+                        {subject.subjectName}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>No subjects available</option>
+                  )}
                 </select>
               </div>
               <div className="flex space-x-2">
                 <button
                   onClick={handleAddSubject}
-                  disabled={!selectedSubject}
+                  disabled={!selectedSubject || !availableSubjects || availableSubjects.length === 0}
                   className="flex-1 bg-green-600 text-white px-3 py-2 text-sm rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                 >
                   Add Subject
@@ -116,7 +117,7 @@ const TutorSubjectsCard = ({
           <div className="space-y-3">
             {tutorSubjects.map(tutorSubject => (
               <div 
-                key={tutorSubject.tutorSubjectId}
+                key={getTutorSubjectId(tutorSubject)}
                 className="group flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-green-300 transition-colors"
               >
                 <div className="flex items-center space-x-3">
@@ -125,15 +126,12 @@ const TutorSubjectsCard = ({
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900">
-                      {tutorSubject.subject.subjectName}
+                      {tutorSubject.subjectName || 'Subject Name'}
                     </h4>
-                    <p className="text-xs text-gray-600 truncate max-w-[200px]">
-                      {tutorSubject.subject.subjectDesc}
-                    </p>
                   </div>
                 </div>
                 <button
-                  onClick={() => handleRemoveSubject(tutorSubject.tutorSubjectId)}
+                  onClick={() => onRemoveSubject(getTutorSubjectId(tutorSubject))}
                   className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition-all p-1"
                   title="Remove subject"
                 >

@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
-import Button from '../common/Button';
-import StepIndicator from '../common/StepIndicator';
+import Button from '../../common/Button';
+import StepIndicator from '../../common/StepIndicator';
 import SubjectSelection from './BookTutorSteps/SubjectSelection';
 import TutorSelection from './BookTutorSteps/TutorSelection';
 import LearningGoalsStep from './BookTutorSteps/LearningGoalsStep';
 import DateTimePicker from './BookTutorSteps/DateTimePicker';
 import SessionSummary from './BookTutorSteps/SessionSummary';
 
-import { sessionService } from '../../services/session';
-import { subjectService } from '../../services/subject';
-import { tutorSubjectService } from '../../services/tutorsubject';
-import { tutorService } from '../../services/tutor'; // Add tutor service import
-import { tuteeService } from '../../services/tutee';
-import { userAPI } from '../../services/user';
-import '../styles/BookTutor.css';
+import { sessionService } from '../../../services/session';
+import { subjectService } from '../../../services/subject';
+import { tutorSubjectService } from '../../../services/tutorsubject';
+import { tutorService } from '../../../services/tutor';
+import { tuteeService } from '../../../services/tutee';
+import { userAPI } from '../../../services/user';
+import '../../styles/BookTutor.css';
 
 const BookTutor = () => {
   const [step, setStep] = useState(1);

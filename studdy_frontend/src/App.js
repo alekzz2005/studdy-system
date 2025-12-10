@@ -1,12 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './components/landing/LandingPage';
-import LoginPage from './components/auth/Login';
-import RegisterPage from './components/auth/Register';
-import Dashboard from './components/dashboard/Dashboard';
-import BookTutor from './components/booktutor/BookTutor';
-import Profile from './components/profile/Profile'; 
-import MessagesPage from './components/messages/MessagesPage';
+import LandingPage from './components/pages/landing/LandingPage';
+import LoginPage from './components/pages/auth/Login';
+import RegisterPage from './components/pages/auth/Register';
+import Dashboard from './components/pages/dashboard/Dashboard';
+import BookTutor from './components/pages/booktutor/BookTutor';
+import Profile from './components/pages/profile/Profile'; 
+import MessagesPage from './components/pages/messages/MessagesPage';
 
 import './styles/index.css';
 

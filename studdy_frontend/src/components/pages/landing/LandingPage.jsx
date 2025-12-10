@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../../services/auth';
-import '../styles/LandingPage.css';
+import { authAPI } from '../../../services/auth';
+import '../../styles/LandingPage.css';
 
 import Header from './HeaderSection';
 

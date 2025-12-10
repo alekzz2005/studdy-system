@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, Phone, Video, Info } from 'lucide-react';
-import { messageAPI, getAvatarInitials } from '../../services/message';
+import { messageAPI, getAvatarInitials } from '../../../services/message';
 import MessageInput from './MessageInput';
 import ChatHeader from './ChatHeader';
 import MessageBubble from './MessageBubble';
@@ -23,7 +23,6 @@ const MessagesPage = () => {
   const navigate = useNavigate();
   const selectedConversationIdFromState = location.state?.selectedConversationId;
 
-  // Get current user from localStorage
   useEffect(() => {
     const userData = localStorage.getItem('userData');
     if (userData) {
@@ -39,7 +38,6 @@ const MessagesPage = () => {
     }
   }, []);
 
-  // Handle state from Dashboard - only on initial load
   useEffect(() => {
     if (selectedConversationIdFromState && conversations.length > 0 && !selectedConversation) {
       console.log('Selecting conversation from state:', selectedConversationIdFromState);
@@ -52,18 +50,15 @@ const MessagesPage = () => {
         console.log('Found conversation, selecting it');
         handleSelectConversation(conversation);
         
-        // Clear the state after using it to prevent re-selection on back
         navigate('/messages', { replace: true, state: {} });
       }
     }
   }, [selectedConversationIdFromState, conversations, selectedConversation, navigate]);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedConversation, messages]);
 
-  // Fetch real conversations
   const fetchConversations = useCallback(async () => {
     if (!currentUser?.id) return;
     
@@ -92,7 +87,6 @@ const MessagesPage = () => {
           updatedAt: conv.updatedAt
         }));
         
-        // Sort by most recent
         formattedConversations.sort((a, b) => 
           new Date(b.updatedAt || b.lastMessage.timestamp) - 
           new Date(a.updatedAt || a.lastMessage.timestamp)
@@ -115,7 +109,6 @@ const MessagesPage = () => {
     }
   }, [currentUser, fetchConversations]);
 
-  // Fetch messages for selected conversation
   const fetchMessages = useCallback(async (conversationId) => {
     if (!conversationId || !currentUser?.id) return;
     
@@ -148,7 +141,6 @@ const MessagesPage = () => {
     }
   }, [currentUser]);
 
-  // Update conversation read status
   const updateConversationReadStatus = useCallback((conversationId) => {
     setConversations(prev => prev.map(conv => 
       conv.id === conversationId 
@@ -157,14 +149,12 @@ const MessagesPage = () => {
     ));
   }, []);
 
-  // Handle conversation selection
   const handleSelectConversation = useCallback((conversation) => {
     console.log('Selecting conversation:', conversation.id);
     setSelectedConversation(conversation);
     fetchMessages(conversation.id);
   }, [fetchMessages]);
 
-  // Handle send message
   const handleSendMessage = useCallback(async () => {
     if (!message.trim() || !selectedConversation || !currentUser?.id) return;
 
@@ -188,13 +178,11 @@ const MessagesPage = () => {
           senderName: `${currentUser.firstName} ${currentUser.lastName}`
         };
 
-        // Update messages
         setMessages(prev => ({
           ...prev,
           [selectedConversation.id]: [...(prev[selectedConversation.id] || []), newMessage]
         }));
 
-        // Update conversation
         setConversations(prev => prev.map(conv => 
           conv.id === selectedConversation.id 
             ? { 
@@ -212,7 +200,6 @@ const MessagesPage = () => {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      // Fallback local update
       const newMessage = {
         id: Date.now(),
         senderId: currentUser.id,
@@ -231,29 +218,24 @@ const MessagesPage = () => {
     setMessage('');
   }, [message, selectedConversation, currentUser]);
 
-  // Handle back to conversation list
   const handleBackToList = useCallback(() => {
     console.log('Going back to conversation list');
     setSelectedConversation(null);
   }, []);
 
-  // Handle going back to dashboard
   const handleGoBack = useCallback(() => {
     if (selectedConversation) {
       handleBackToList();
     } else {
-      // If we're already on conversation list, go back to dashboard
-      navigate(-1); // Go back one step in history
+      navigate(-1); 
     }
   }, [selectedConversation, handleBackToList, navigate]);
 
-  // Filter conversations
   const filteredConversations = conversations.filter(conv =>
     conv.participant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     conv.participant.subject.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Mock data fallback functions
   const loadMockData = useCallback(() => {
     const mockConversations = [
       {
@@ -341,7 +323,6 @@ const MessagesPage = () => {
     console.log('Loaded mock messages for conversation:', conversationId);
   }, []);
 
-  // Loading state
   if (loading && conversations.length === 0) {
     return <LoadingState message="Loading messages..." />;
   }
@@ -409,7 +390,6 @@ const MessagesPage = () => {
   );
 };
 
-// Sub-components
 const ConversationListView = ({ searchQuery, setSearchQuery, conversations, currentUserId, onSelectConversation }) => (
   <div className="flex flex-col h-full">
     <div className="p-4 border-b border-gray-200">

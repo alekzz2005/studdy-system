@@ -75,18 +75,7 @@ public class SessionService {
 
     // ========== UPDATE ==========
     public SessionDTO updateSessionStatus(Long sessionId, String status) {
-        SessionEntity session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Session not found with ID: " + sessionId));
-
-        String previousStatus = session.getStatus();
-        session.setStatus(status);
-        SessionEntity updatedSession = sessionRepository.save(session);
-
-        // Create notifications and send messages based on status change
-        handleStatusChangeNotificationsAndMessages(session, previousStatus, status);
-
-        return convertToDTO(updatedSession);
+        return updateSessionStatusWithReason(sessionId, status, null);
     }
 
     // Overloaded update method for UpdateSessionDTO
@@ -137,7 +126,7 @@ public class SessionService {
         if (updateSessionDTO.getStatus() != null && 
             !updateSessionDTO.getStatus().equals(previousStatus)) {
             session.setStatus(updateSessionDTO.getStatus());
-            handleStatusChangeNotificationsAndMessages(session, previousStatus, updateSessionDTO.getStatus());
+            handleStatusChangeNotificationsAndMessages(session, previousStatus, updateSessionDTO.getStatus(), null);
         }
 
         if (updateSessionDTO.getRating() != null) {
@@ -280,9 +269,67 @@ public class SessionService {
     }
 
     /**
+     * NEW: Create notification for tutor when tutee cancels pending booking
+     */
+    private void createTutorPendingBookingCancelledNotification(SessionEntity session, String reason) {
+        try {
+            UserEntity tutorUser = userRepository.findById(session.getTutor().getUser().getUserId())
+                    .orElseThrow(() -> new NoSuchElementException("Tutor user not found"));
+
+            String formattedDateTime = formatSessionDateTime(session);
+            
+            NotificationRequestDTO notification = NotificationRequestDTO.builder()
+                    .userId(tutorUser.getUserId())
+                    .notificationType("SESSION_CANCELLED")
+                    .title("Session Cancelled by Tutee")
+                    .message(String.format(
+                            "%s has cancelled their pending %s session on %s. %s",
+                            session.getTutee().getUser().getFirstName(),
+                            session.getSubject().getSubjectName(),
+                            formattedDateTime,
+                            reason != null ? "Reason: " + reason : ""
+                    ))
+                    .build();
+
+            notificationService.createNotification(notification);
+        } catch (Exception e) {
+            System.err.println("Failed to create tutor cancellation notification: " + e.getMessage());
+        }
+    }
+
+    /**
+     * NEW: Create notification for tutor when tutee cancels confirmed booking
+     */
+    private void createTutorConfirmedBookingCancelledNotification(SessionEntity session, String reason) {
+        try {
+            UserEntity tutorUser = userRepository.findById(session.getTutor().getUser().getUserId())
+                    .orElseThrow(() -> new NoSuchElementException("Tutor user not found"));
+
+            String formattedDateTime = formatSessionDateTime(session);
+            
+            NotificationRequestDTO notification = NotificationRequestDTO.builder()
+                    .userId(tutorUser.getUserId())
+                    .notificationType("SESSION_CANCELLED")
+                    .title("Session Cancelled by Tutee")
+                    .message(String.format(
+                            "%s has cancelled the confirmed %s session on %s. %s",
+                            session.getTutee().getUser().getFirstName(),
+                            session.getSubject().getSubjectName(),
+                            formattedDateTime,
+                            reason != null ? "Reason: " + reason : ""
+                    ))
+                    .build();
+
+            notificationService.createNotification(notification);
+        } catch (Exception e) {
+            System.err.println("Failed to create tutor cancellation notification: " + e.getMessage());
+        }
+    }
+
+    /**
      * Handle status change notifications AND messages
      */
-    private void handleStatusChangeNotificationsAndMessages(SessionEntity session, String previousStatus, String newStatus) {
+    private void handleStatusChangeNotificationsAndMessages(SessionEntity session, String previousStatus, String newStatus, String reason) {
         if ("Pending".equals(previousStatus) && "Confirmed".equals(newStatus)) {
             // Tutor accepted the booking
             createTuteeBookingAcceptedNotification(session);
@@ -290,17 +337,27 @@ public class SessionService {
         } 
         else if ("Pending".equals(previousStatus) && "Declined".equals(newStatus)) {
             // Tutor declined the booking
-            createTuteeBookingDeclinedNotification(session, "Tutor declined the booking");
-            notificationMessageService.sendDeclineMessage(session, "Tutor declined the booking");
+            createTuteeBookingDeclinedNotification(session, reason);
+            notificationMessageService.sendDeclineMessage(session, reason);
         }
         else if ("Confirmed".equals(previousStatus) && "Cancelled".equals(newStatus)) {
-            // Tutor cancelled a confirmed booking
-            createTuteeBookingCancelledNotification(session, "Tutor cancelled the session");
-            notificationMessageService.sendCancellationMessage(session, "Tutor cancelled the session");
+            // Check who initiated the cancellation
+            // This would need additional logic to track who cancelled, but for now
+            // we'll assume it's the tutor when coming from Confirmed status
+            createTuteeBookingCancelledNotification(session, reason);
+            notificationMessageService.sendCancellationMessage(session, reason);
         }
         else if ("Pending".equals(previousStatus) && "Cancelled".equals(newStatus)) {
-            // Booking was cancelled (by either party before confirmation)
-            // Optional: Add message for this scenario if needed
+            // Tutee cancelled a pending booking
+            createTutorPendingBookingCancelledNotification(session, reason);
+            notificationMessageService.sendTuteeCancellationMessage(session, reason, false); // false = pending
+        }
+        else if ("Confirmed".equals(previousStatus) && "Cancelled".equals(newStatus)) {
+            // Tutee cancelled a confirmed booking (this could be from tutee as well)
+            // We need additional logic to determine who cancelled
+            // For now, we'll handle both cases
+            createTuteeBookingCancelledNotification(session, reason);
+            notificationMessageService.sendCancellationMessage(session, reason);
         }
     }
 
@@ -351,17 +408,70 @@ public class SessionService {
         SessionEntity updatedSession = sessionRepository.save(session);
 
         // Handle notifications and messages with custom reason
-        if ("Pending".equals(previousStatus) && "Declined".equals(status)) {
+        handleStatusChangeNotificationsAndMessages(session, previousStatus, status, reason);
+
+        return convertToDTO(updatedSession);
+    }
+
+    /**
+     * NEW: Method specifically for tutee cancelling a session
+     */
+    public SessionDTO cancelSessionByTutee(Long sessionId, String reason) {
+        SessionEntity session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Session not found with ID: " + sessionId));
+
+        String previousStatus = session.getStatus();
+        
+        // Validate tutee can cancel
+        if (!"Pending".equals(previousStatus) && !"Confirmed".equals(previousStatus)) {
+            throw new IllegalStateException("Session cannot be cancelled in its current status: " + previousStatus);
+        }
+
+        session.setStatus("Cancelled");
+        SessionEntity updatedSession = sessionRepository.save(session);
+
+        // Create specific notifications for tutee cancellation
+        if ("Pending".equals(previousStatus)) {
+            // Tutee cancelled a pending booking
+            createTutorPendingBookingCancelledNotification(session, reason);
+            notificationMessageService.sendTuteeCancellationMessage(session, reason, false); // false = pending
+        } else if ("Confirmed".equals(previousStatus)) {
+            // Tutee cancelled a confirmed booking
+            createTutorConfirmedBookingCancelledNotification(session, reason);
+            notificationMessageService.sendTuteeCancellationMessage(session, reason, true); // true = confirmed
+        }
+
+        return convertToDTO(updatedSession);
+    }
+
+    /**
+     * NEW: Method specifically for tutor cancelling a session (different from tutee cancellation)
+     */
+    public SessionDTO cancelSessionByTutor(Long sessionId, String reason) {
+        SessionEntity session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Session not found with ID: " + sessionId));
+
+        String previousStatus = session.getStatus();
+        
+        // Validate tutor can cancel
+        if (!"Pending".equals(previousStatus) && !"Confirmed".equals(previousStatus)) {
+            throw new IllegalStateException("Session cannot be cancelled in its current status: " + previousStatus);
+        }
+
+        session.setStatus("Cancelled");
+        SessionEntity updatedSession = sessionRepository.save(session);
+
+        // Create notifications for tutor cancellation
+        if ("Pending".equals(previousStatus)) {
+            // Tutor declined a pending booking (already handled in other methods)
             createTuteeBookingDeclinedNotification(session, reason);
             notificationMessageService.sendDeclineMessage(session, reason);
-        } 
-        else if ("Confirmed".equals(previousStatus) && "Cancelled".equals(status)) {
+        } else if ("Confirmed".equals(previousStatus)) {
+            // Tutor cancelled a confirmed booking
             createTuteeBookingCancelledNotification(session, reason);
             notificationMessageService.sendCancellationMessage(session, reason);
-        }
-        else if ("Pending".equals(previousStatus) && "Confirmed".equals(status)) {
-            createTuteeBookingAcceptedNotification(session);
-            notificationMessageService.sendAcceptanceMessage(session);
         }
 
         return convertToDTO(updatedSession);

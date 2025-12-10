@@ -3,7 +3,7 @@ import { Bell, CalendarPlus, ChevronDown, Check, Clock, AlertCircle, Loader2 } f
 import ProfileDropdown from './ProfileDropdown';
 import { Link } from 'react-router-dom';
 
-import { notificationAPI } from '../../services/notification'; // Import the notification API
+import { notificationAPI } from '../../../services/notification'; // Import the notification API
 
 const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -198,7 +198,7 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link to="/">
+            <Link to="/dashboard">
               <h1 className="text-3xl font-bold text-green-600 leading-none pt-5">Studdy</h1>
             </Link>
           </div>
