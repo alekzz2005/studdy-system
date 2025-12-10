@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
 import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../../services/auth';
-import { userAPI } from '../../services/user';
-import { sessionService } from '../../services/session';
-import { tuteeService } from '../../services/tutee';
-import { tutorService } from '../../services/tutor';
-import { subjectService } from '../../services/subject';
-import { tutorSubjectService } from '../../services/tutorsubject';
-import { messageAPI, getAvatarInitials } from '../../services/message';
+import { authAPI } from '../../../services/auth';
+import { userAPI } from '../../../services/user';
+import { sessionService } from '../../../services/session';
+import { tuteeService } from '../../../services/tutee';
+import { tutorService } from '../../../services/tutor';
+import { subjectService } from '../../../services/subject';
+import { tutorSubjectService } from '../../../services/tutorsubject';
+import { messageAPI, getAvatarInitials } from '../../../services/message';
 
 import DashboardHeader from './DashboardHeader';
 import WelcomeBanner from './WelcomeBanner';
@@ -256,61 +256,6 @@ const fetchUpcomingSessions = async () => {
   }
 };
 
-// Add these helper functions after your existing functions in Dashboard.jsx
-const formatSessionDate = (session) => {
-  const { sessionYear, sessionMonth, sessionDay, startHour, startMinute, startAmPm, duration } = session;
-  
-  const sessionDate = new Date(sessionYear, sessionMonth - 1, sessionDay);
-  const now = new Date();
-  
-  // Check if it's today or tomorrow
-  if (sessionDate.toDateString() === now.toDateString()) {
-    return 'Today';
-  }
-  
-  const tomorrow = new Date(now);
-  tomorrow.setDate(now.getDate() + 1);
-  if (sessionDate.toDateString() === tomorrow.toDateString()) {
-    return 'Tomorrow';
-  }
-  
-  // Format as "Mon, Jan 1"
-  return sessionDate.toLocaleDateString('en-US', { 
-    weekday: 'short', 
-    month: 'short', 
-    day: 'numeric' 
-  });
-};
-
-const formatSessionTime = (session) => {
-  const { startHour, startMinute, startAmPm, duration } = session;
-  
-  // Calculate end time
-  let endHour = startHour;
-  let endMinute = startMinute + duration;
-  let endAmPm = startAmPm;
-  
-  // Handle minute overflow
-  if (endMinute >= 60) {
-    endHour += Math.floor(endMinute / 60);
-    endMinute = endMinute % 60;
-  }
-  
-  // Handle hour overflow and AM/PM conversion
-  if (endHour >= 12) {
-    if (endHour > 12) {
-      endHour -= 12;
-    }
-    endAmPm = 'PM';
-  }
-  
-  const startTime = `${startHour}:${startMinute.toString().padStart(2, '0')} ${startAmPm}`;
-  const endTime = `${endHour}:${endMinute.toString().padStart(2, '0')} ${endAmPm}`;
-  
-  return `${startTime} - ${endTime}`;
-};
-
-
 const fetchAvailableTutors = async () => {
   setLoadingTutors(true);
   try {
@@ -473,7 +418,6 @@ const fetchMessages = async () => {
   };
 
   const handleViewAllMessages = () => {
-    // Simple navigation without URL parameters
     navigate('/messages');
   };
 
@@ -500,7 +444,6 @@ const fetchMessages = async () => {
         onLogout={handleLogout}
       />
 
-      {/* Change this line: Add pt-24 to push content below the fixed header */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">

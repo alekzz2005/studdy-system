@@ -135,6 +135,47 @@ public class NotificationMessageService {
         }
     }
 
+    public void sendTuteeCancellationMessage(SessionEntity session, String reason, boolean wasConfirmed) {
+        try {
+            Long tuteeUserId = session.getTutee().getUser().getUserId();
+            Long tutorUserId = session.getTutor().getUser().getUserId();
+            String subjectName = session.getSubject().getSubjectName();
+            String formattedDateTime = formatSessionDateTime(session);
+            
+            String message;
+            String subject;
+            
+            if (wasConfirmed) {
+                subject = "Session Cancelled by Tutee - " + subjectName;
+                message = String.format(
+                    "I need to cancel our confirmed %s session scheduled for %s. %s", 
+                    subjectName, 
+                    formattedDateTime,
+                    reason != null && !reason.trim().isEmpty() ? "Reason: " + reason : "I apologize for the inconvenience."
+                );
+            } else {
+                subject = "Pending Session Cancelled - " + subjectName;
+                message = String.format(
+                    "I need to cancel my pending %s session request for %s. %s", 
+                    subjectName,
+                    formattedDateTime,
+                    reason != null && !reason.trim().isEmpty() ? "Reason: " + reason : ""
+                );
+            }
+            
+            SendMessageRequest messageRequest = SendMessageRequest.builder()
+                .receiverId(tutorUserId)
+                .text(message)
+                .subject(subject)
+                .type("TEXT")
+                .build();
+            
+            messageService.sendMessage(messageRequest, tuteeUserId);
+        } catch (Exception e) {
+            System.err.println("Failed to send tutee cancellation message: " + e.getMessage());
+        }
+    }
+
     public void sendCustomMessage(Long senderId, Long receiverId, String subject, String messageText) {
         SendMessageRequest messageRequest = SendMessageRequest.builder()
             .receiverId(receiverId)

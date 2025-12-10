@@ -29,7 +29,7 @@ const ChatHeader = ({ conversation, onBack, isMobile }) => {
           <div>
             <h3 className="font-semibold text-gray-900">{conversation.participant.name}</h3>
             <p className="text-xs text-gray-500">
-              {conversation.participant.online ? 'Online' : 'Offline'} • {conversation.participant.subject}
+              {conversation.participant.online ? 'Online' : 'Offline'}
             </p>
           </div>
         </div>

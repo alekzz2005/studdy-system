@@ -1,7 +1,7 @@
 // components/auth/RegisterSteps/BasicInfo.jsx
 import React from 'react';
 import { User, Mail, Lock, Phone, Calendar } from 'lucide-react';
-import InputField from '../../common/InputField';
+import InputField from '../../../common/InputField';
 
 const BasicInfo = ({ formData, onChange, errors }) => {
   return (

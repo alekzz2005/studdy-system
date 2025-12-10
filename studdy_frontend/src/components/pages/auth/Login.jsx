@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, BookOpen } from 'lucide-react';
-import AuthLayout from '../layout/AuthLayout';
-import InputField from '../common/InputField';
-import Button from '../common/Button';
-import { authAPI } from '../../services/auth';
+import AuthLayout from '../../layout/AuthLayout';
+import InputField from '../../common/InputField';
+import Button from '../../common/Button';
+import { authAPI } from '../../../services/auth';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({

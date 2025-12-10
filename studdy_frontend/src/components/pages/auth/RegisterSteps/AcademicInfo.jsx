@@ -1,9 +1,9 @@
 // components/auth/RegisterSteps/AcademicInfo.jsx
 import React from 'react';
 import { BookOpen, GraduationCap, Target } from 'lucide-react';
-import InputField from '../../common/InputField';
-import Select from '../../common/Select';
-import Textarea from '../../common/Textarea';
+import InputField from '../../../common/InputField';
+import Select from '../../../common/Select';
+import Textarea from '../../../common/Textarea';
 
 const AcademicInfo = ({ formData, onChange, errors }) => {
   const gradeLevels = [
@@ -17,8 +17,7 @@ const AcademicInfo = ({ formData, onChange, errors }) => {
     { value: 13, label: 'College - 1st Year' },
     { value: 14, label: 'College - 2nd Year' },
     { value: 15, label: 'College - 3rd Year' },
-    { value: 16, label: 'College - 4th Year' },
-    { value: 17, label: 'Postgraduate' }
+    { value: 16, label: 'College - 4th Year' }
   ];
 
   const handleChange = (e) => {

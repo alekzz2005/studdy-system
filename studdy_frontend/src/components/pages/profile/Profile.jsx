@@ -9,12 +9,12 @@ import TutorSubjectsCard from './TutorSubjectsCard';
 import LoadingState from './LoadingState';
 import ErrorState from './ErrorState';
 
-import { userAPI, userHelpers } from '../../services/user';
-import { tutorService } from '../../services/tutor';
-import { tutorSubjectService } from '../../services/tutorsubject';
-import { tuteeService } from '../../services/tutee';
-import { subjectService } from '../../services/subject';
-import { sessionService } from '../../services/session';
+import { userAPI, userHelpers } from '../../../services/user';
+import { tutorService } from '../../../services/tutor';
+import { tutorSubjectService } from '../../../services/tutorsubject';
+import { tuteeService } from '../../../services/tutee';
+import { subjectService } from '../../../services/subject';
+import { sessionService } from '../../../services/session';
 
 import { formatDate } from './utils';
 
@@ -123,6 +123,8 @@ const Profile = () => {
         };
         
         setUserProfile(profileData);
+
+        console.log("Profile Data: ", profileData)
       } catch (profileError) {
         console.error('Error fetching user profile:', profileError);
         // Fallback to basic user data
@@ -329,45 +331,6 @@ const Profile = () => {
     }
   };
 
-  const handleToggleAvailability = async () => {
-    if (!userProfile.tutor || !userProfile.tutor.tutorId) {
-      setError('Tutor data not available');
-      return;
-    }
-    
-    try {
-      const tutorId = userProfile.tutor.tutorId;
-      const newAvailability = !userProfile.tutor.isAvailable;
-      
-      // Prepare update data
-      const updateData = {
-        ...userProfile.tutor,
-        isAvailable: newAvailability
-      };
-      
-      // Note: You might need to add an updateTutor method to your tutorService
-      // For now, we'll update locally and show a success message
-      // If you have an updateTutor API, uncomment the following:
-      // await tutorService.updateTutor(tutorId, updateData);
-      
-      // Update local state
-      setUserProfile(prev => ({
-        ...prev,
-        tutor: {
-          ...prev.tutor,
-          isAvailable: newAvailability
-        }
-      }));
-      
-      setSuccessMessage(`Availability ${newAvailability ? 'enabled' : 'disabled'} successfully!`);
-      setTimeout(() => setSuccessMessage(''), 3000);
-      setError('');
-    } catch (error) {
-      console.error('Error updating availability:', error);
-      setError(error.response?.data?.message || 'Failed to update availability');
-    }
-  };
-
   const refreshProfile = () => {
     fetchUserProfile();
   };
@@ -429,7 +392,7 @@ const Profile = () => {
               editingSection={editingSection}
               setEditingSection={setEditingSection}
               onSave={handleBasicInfoSave}
-              saving={saving}
+              saving={saving} 
               setError={setError}
               formatDate={formatDate}
             />
@@ -453,7 +416,7 @@ const Profile = () => {
               profileCompletion={getProfileCompletion(userProfile.user)}
             />
             
-            {/* {userProfile.tutor && (
+            {userProfile.tutor && (
               <TutorSubjectsCard
                 tutor={userProfile.tutor}
                 tutorSubjects={userProfile.tutorSubjects}
@@ -464,19 +427,9 @@ const Profile = () => {
                 onRemoveSubject={handleRemoveSubject}
                 setError={setError}
               />
-            )} */}
+            )}
           </div>
         </div>
-        
-        {/* Refresh Button */}
-        {/* <div className="mt-8 text-center">
-          <button
-            onClick={refreshProfile}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Refresh Profile
-          </button>
-        </div> */}
       </main>
     </div>
   );

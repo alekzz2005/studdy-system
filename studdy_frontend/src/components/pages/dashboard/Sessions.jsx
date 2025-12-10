@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, RefreshCw, BookOpen, Clock, CalendarPlus, CalendarX, CheckCircle, XCircle, Ban, ChevronLeft, ChevronRight } from 'lucide-react';
-import { sessionService } from '../../services/session';
+import { sessionService } from '../../../services/session';
 
 const Sessions = ({ sessions, loading, onRefresh, onBookSession, userType, currentUserId }) => {
   const [processingSession, setProcessingSession] = useState(null);
@@ -9,7 +9,6 @@ const Sessions = ({ sessions, loading, onRefresh, onBookSession, userType, curre
   const sessionsContainerRef = useRef(null);
   const VISIBLE_LIMIT = 4;
 
-  // Reset scroll position when sessions change
   useEffect(() => {
     setVisibleStartIndex(0);
   }, [sessions]);
@@ -67,6 +66,12 @@ const Sessions = ({ sessions, loading, onRefresh, onBookSession, userType, curre
 
   const canTutorRespond = (session) => {
     return userType === 'TUTOR' && 
+           (session.status === 'Pending' || session.status === 'pending');
+  };
+
+  // NEW: Check if tutee can cancel (only pending sessions)
+  const canTuteeCancel = (session) => {
+    return userType === 'TUTEE' && 
            (session.status === 'Pending' || session.status === 'pending');
   };
 
@@ -251,6 +256,30 @@ const Sessions = ({ sessions, loading, onRefresh, onBookSession, userType, curre
                               )}
                             </button>
                           )}
+                        </div>
+                      )}
+                      
+                      {/* NEW: Tutee Actions */}
+                      {userType === 'TUTEE' && (
+                        <div className="flex space-x-2">
+                          {/* Cancel button for pending sessions */}
+                          {canTuteeCancel(session) && (
+                            <button 
+                              onClick={() => handleCancel(sessionId)}
+                              disabled={processingSession === sessionId}
+                              className="flex items-center space-x-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                            >
+                              {isProcessing(sessionId, 'cancel') ? (
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <Ban className="w-4 h-4" />
+                                  <span>Cancel</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+
                         </div>
                       )}
                     </div>

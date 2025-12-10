@@ -37,7 +37,7 @@ const ConversationItem = ({ conversation, currentUserId, onClick }) => {
             </span>
           </div>
           
-          <p className="text-xs text-gray-500 mb-1">{conversation.participant.subject}</p>
+          {/* <p className="text-xs text-gray-500 mb-1">{conversation.participant.subject}</p> */}
           
           <div className="flex items-center justify-between">
             <p className={`text-sm truncate flex-1 ${

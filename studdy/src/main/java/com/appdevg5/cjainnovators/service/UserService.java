@@ -300,7 +300,7 @@ public class UserService {
             .major(user.getMajor())
             .dateStarted(user.getDateStarted())
             .type(user.getType())
-            .active(user.isActive())
+            .active(true)
             .build();
     }
     
@@ -401,7 +401,7 @@ public class UserService {
             userEntity.setMajor(updateUserDTO.getMajor());
         }
         
-        userEntity.setActive(updateUserDTO.isActive());
+        userEntity.setActive(true);
         
         UserEntity updatedUser = userRepository.save(userEntity);
         return convertToDTO(updatedUser);
