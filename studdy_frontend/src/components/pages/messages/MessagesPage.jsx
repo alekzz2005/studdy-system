@@ -339,7 +339,7 @@ const MessagesPage = () => {
               >
                 <ArrowLeft className="w-6 h-6 text-gray-600" />
               </button>
-              <h1 className="text-2xl font-bold text-green-600 ml-4">
+              <h1 className="text-2xl font-bold text-green-600 ml-4 leading-none pt-5">
                 {selectedConversation ? selectedConversation.participant.name : 'Messages'}
               </h1>
             </div>
