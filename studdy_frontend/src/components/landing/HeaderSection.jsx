@@ -29,7 +29,7 @@ const Header = ({ onSignIn, onGetStarted }) => {
         <div className="flex justify-between items-center h-16 relative">
           <a 
             href="/" 
-            className="text-2xl font-bold text-green-600 hover:text-green-700 transition-colors no-underline flex-shrink-0"
+            className="text-3xl font-bold text-green-600 hover:text-green-700 transition-colors no-underline flex-shrink-0"
             onClick={handleLogoClick}
           >
             Studdy
@@ -71,7 +71,7 @@ const Header = ({ onSignIn, onGetStarted }) => {
             
             <button
               onClick={onGetStarted}
-              className="px-6 py-2.5 bg-green-600 text-white hover:bg-green-700 rounded-lg font-medium text-sm transition-colors shadow-md hover:shadow-lg"
+              className="px-6 py-2.5 bg-green-600 text-white hover:bg-green-700 rounded-lg font-medium text-sm transition-colors shadow-md hover:shadow-lg whitespace-nowrap min-w-[120px]"
             >
               Get Started
             </button>
