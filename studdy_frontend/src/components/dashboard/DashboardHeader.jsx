@@ -40,7 +40,15 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
     setLoadingNotifications(true);
     try {
       const data = await notificationAPI.getUserNotifications(currentUser.userId);
-      setNotifications(data);
+      
+      // Sort notifications: most recent first (descending by dateCreated)
+      const sortedNotifications = [...data].sort((a, b) => {
+        const dateA = new Date(a.dateCreated);
+        const dateB = new Date(b.dateCreated);
+        return dateB - dateA; // Most recent first
+      });
+      
+      setNotifications(sortedNotifications);
     } catch (error) {
       console.error('Error fetching notifications:', error);
       setNotifications([]);
@@ -66,7 +74,6 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
     }
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
@@ -78,19 +85,24 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle notification click (mark as read)
   const handleNotificationClick = async (notificationId) => {
     try {
-      // Mark notification as read via API
       await notificationAPI.markAsRead(notificationId);
       
       console.log('Marked notification as read:', notificationId);
-      // Update local state
-      setNotifications(prev =>
-        prev.map(n =>
+      
+      // Update notifications while maintaining sort order
+      setNotifications(prev => {
+        const updated = prev.map(n =>
           n.notificationId === notificationId ? { ...n, isRead: true } : n
-        )
-      );
+        );
+        // Re-sort after update (though marking as read shouldn't change order)
+        return updated.sort((a, b) => {
+          const dateA = new Date(a.dateCreated);
+          const dateB = new Date(b.dateCreated);
+          return dateB - dateA;
+        });
+      });
       
       // Update unread count
       setUnreadCount(prev => Math.max(0, prev - 1));
@@ -99,7 +111,6 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
     }
   };
 
-  // Mark all notifications as read
   const markAllAsRead = async () => {
     if (!currentUser?.userId) return;
     
@@ -108,17 +119,21 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
 
       console.log('Marked all notifications as read for user:', currentUser.userId);
       
-      // Update local state
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, isRead: true }))
-      );
+      // Update local state while maintaining sort order
+      setNotifications(prev => {
+        const updated = prev.map(n => ({ ...n, isRead: true }));
+        return updated.sort((a, b) => {
+          const dateA = new Date(a.dateCreated);
+          const dateB = new Date(b.dateCreated);
+          return dateB - dateA;
+        });
+      });
       setUnreadCount(0);
     } catch (error) {
       console.error('Error marking all as read:', error);
     }
   };
 
-  // Format time ago for display
   const formatTimeAgo = (dateString) => {
     if (!dateString) return 'Just now';
     

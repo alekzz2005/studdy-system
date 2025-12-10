@@ -1,6 +1,6 @@
 package com.appdevg5.cjainnovators.dto.notificationdto;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,5 +19,5 @@ public class NotificationResponseDTO {
     private String title;
     private String message;
     private boolean isRead;
-    private LocalDate dateCreated;
+    private LocalDateTime dateCreated;
 }

@@ -6,9 +6,8 @@ const MessagesSection = ({ messages, onMessageClick }) => {
   const navigate = useNavigate();
   const unreadCount = messages.filter(m => m.unread).length;
 
-  // Handle view all messages navigation
   const handleViewAllMessages = () => {
-    navigate('/messages'); // This navigates to your messages page
+    navigate('/messages');
   };
 
   return (

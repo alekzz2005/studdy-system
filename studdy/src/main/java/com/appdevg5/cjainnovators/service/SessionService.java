@@ -16,12 +16,13 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class SessionService {
-
+    
     private final SessionRepository sessionRepository;
     private final TutorRepository tutorRepository;
     private final TuteeRepository tuteeRepository;
     private final SubjectRepository subjectRepository;
     private final NotificationService notificationService;
+    private final NotificationMessageService notificationMessageService;
     private final UserRepository userRepository;
 
     // ========== CREATE ==========
@@ -64,6 +65,9 @@ public class SessionService {
 
         // Create notification for tutor about new booking
         createTutorBookingNotification(savedSession);
+        
+        // Send message from tutee to tutor about the booking request
+        notificationMessageService.sendBookingRequestMessage(savedSession);
 
         // Convert to DTO and return
         return convertToDTO(savedSession);
@@ -79,8 +83,8 @@ public class SessionService {
         session.setStatus(status);
         SessionEntity updatedSession = sessionRepository.save(session);
 
-        // Create notifications based on status change
-        handleStatusChangeNotifications(session, previousStatus, status);
+        // Create notifications and send messages based on status change
+        handleStatusChangeNotificationsAndMessages(session, previousStatus, status);
 
         return convertToDTO(updatedSession);
     }
@@ -133,7 +137,7 @@ public class SessionService {
         if (updateSessionDTO.getStatus() != null && 
             !updateSessionDTO.getStatus().equals(previousStatus)) {
             session.setStatus(updateSessionDTO.getStatus());
-            handleStatusChangeNotifications(session, previousStatus, updateSessionDTO.getStatus());
+            handleStatusChangeNotificationsAndMessages(session, previousStatus, updateSessionDTO.getStatus());
         }
 
         if (updateSessionDTO.getRating() != null) {
@@ -276,24 +280,27 @@ public class SessionService {
     }
 
     /**
-     * Handle status change notifications
+     * Handle status change notifications AND messages
      */
-    private void handleStatusChangeNotifications(SessionEntity session, String previousStatus, String newStatus) {
+    private void handleStatusChangeNotificationsAndMessages(SessionEntity session, String previousStatus, String newStatus) {
         if ("Pending".equals(previousStatus) && "Confirmed".equals(newStatus)) {
             // Tutor accepted the booking
             createTuteeBookingAcceptedNotification(session);
+            notificationMessageService.sendAcceptanceMessage(session);
         } 
         else if ("Pending".equals(previousStatus) && "Declined".equals(newStatus)) {
             // Tutor declined the booking
             createTuteeBookingDeclinedNotification(session, "Tutor declined the booking");
+            notificationMessageService.sendDeclineMessage(session, "Tutor declined the booking");
         }
         else if ("Confirmed".equals(previousStatus) && "Cancelled".equals(newStatus)) {
             // Tutor cancelled a confirmed booking
             createTuteeBookingCancelledNotification(session, "Tutor cancelled the session");
+            notificationMessageService.sendCancellationMessage(session, "Tutor cancelled the session");
         }
         else if ("Pending".equals(previousStatus) && "Cancelled".equals(newStatus)) {
             // Booking was cancelled (by either party before confirmation)
-            // You might want to add logic here if needed
+            // Optional: Add message for this scenario if needed
         }
     }
 
@@ -329,7 +336,60 @@ public class SessionService {
         return monthNames[month - 1];
     }
 
-    // ========== REST OF THE METHODS (unchanged) ==========
+    // ========== ADDITIONAL METHODS FOR SPECIFIC MESSAGE SCENARIOS ==========
+
+    /**
+     * Update session status with custom reason message
+     */
+    public SessionDTO updateSessionStatusWithReason(Long sessionId, String status, String reason) {
+        SessionEntity session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Session not found with ID: " + sessionId));
+
+        String previousStatus = session.getStatus();
+        session.setStatus(status);
+        SessionEntity updatedSession = sessionRepository.save(session);
+
+        // Handle notifications and messages with custom reason
+        if ("Pending".equals(previousStatus) && "Declined".equals(status)) {
+            createTuteeBookingDeclinedNotification(session, reason);
+            notificationMessageService.sendDeclineMessage(session, reason);
+        } 
+        else if ("Confirmed".equals(previousStatus) && "Cancelled".equals(status)) {
+            createTuteeBookingCancelledNotification(session, reason);
+            notificationMessageService.sendCancellationMessage(session, reason);
+        }
+        else if ("Pending".equals(previousStatus) && "Confirmed".equals(status)) {
+            createTuteeBookingAcceptedNotification(session);
+            notificationMessageService.sendAcceptanceMessage(session);
+        }
+
+        return convertToDTO(updatedSession);
+    }
+
+    /**
+     * Send follow-up message from tutor to tutee (custom message)
+     */
+    public void sendCustomMessageToTutee(Long sessionId, String messageText) {
+        try {
+            SessionEntity session = sessionRepository.findById(sessionId)
+                    .orElseThrow(() -> new NoSuchElementException(
+                            "Session not found with ID: " + sessionId));
+
+            Long tutorUserId = session.getTutor().getUser().getUserId();
+            Long tuteeUserId = session.getTutee().getUser().getUserId();
+            String subjectName = session.getSubject().getSubjectName();
+
+            // Use NotificationMessageService for custom messages too
+            notificationMessageService.sendCustomMessage(tutorUserId, tuteeUserId, 
+                "Regarding our " + subjectName + " session", messageText);
+        } catch (Exception e) {
+            System.err.println("Failed to send custom message: " + e.getMessage());
+            throw new RuntimeException("Failed to send message: " + e.getMessage());
+        }
+    }
+
+    // ========== REST OF THE METHODS ==========
     public SessionDTO getSessionById(Long sessionId) {
         SessionEntity session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NoSuchElementException(
