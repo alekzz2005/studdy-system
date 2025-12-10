@@ -46,7 +46,7 @@ const LearningGoalsStep = ({ formData, errors, onChange }) => {
               checked={formData.medium === 'online'}
               onChange={(e) => onChange('medium', e.target.value)}
             />
-            <label htmlFor="online" className="radio-label">Online Tutor</label>
+            <label htmlFor="online" className="radio-label">Online</label>
           </div>
         </div>
         {errors.medium && <span className="error-message">{errors.medium}</span>}

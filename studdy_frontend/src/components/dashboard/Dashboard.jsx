@@ -8,10 +8,10 @@ import { tuteeService } from '../../services/tutee';
 import { tutorService } from '../../services/tutor';
 import { subjectService } from '../../services/subject';
 import { tutorSubjectService } from '../../services/tutorsubject';
+import { messageAPI, getAvatarInitials } from '../../services/message';
 
 import DashboardHeader from './DashboardHeader';
 import WelcomeBanner from './WelcomeBanner';
-import TutorProfileCard from './TutorProfileCard';
 import Sessions from './Sessions';
 import MessagesSection from './MessagesSection';
 import AvailableTutors from './AvailableTutors';
@@ -30,51 +30,42 @@ const Dashboard = () => {
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState('');
 
-  // REPLACE your useEffect with this:
   useEffect(() => {
     const initDashboard = async () => {
       await fetchCurrentUser();
-      // Wait for currentUser to be set before fetching sessions
     };
     initDashboard();
   }, []);
 
-  // ADD this useEffect to run when currentUser changes:
   useEffect(() => {
     if (currentUser?.userId) {
       fetchUpcomingSessions();
       fetchAvailableTutors();
       fetchMessages();
     }
-  }, [currentUser]); // This runs AFTER currentUser is set
+  }, [currentUser]);
 
 const fetchCurrentUser = async () => {
   try {
     setLoading(true);
     const userData = JSON.parse(localStorage.getItem('userData'));
-    console.log('LocalStorage userData:', userData); // Add this
+    console.log('LocalStorage userData:', userData);
     
     if (userData && (userData.userId || userData.id)) {
-      // Use existing userId from localStorage
       const userId = userData.userId || userData.id;
       
-      // Fetch fresh user data from API
       const response = await userAPI.getUserById(userId);
       if (response.success) {
-        // Ensure userId is set
         const updatedUser = { ...response.user, userId: response.user.userId || response.user.id };
         setCurrentUser(updatedUser);
         localStorage.setItem('userData', JSON.stringify(updatedUser));
       } else {
-        // Fallback to stored data if API fails
         setCurrentUser({ ...userData, userId });
       }
     } else {
-      // Try to get current user from token
       const response = await userAPI.getCurrentUser();
       if (response.success) {
         const user = response.user;
-        // Ensure userId is set
         const userWithId = { ...user, userId: user.userId || user.id };
         setCurrentUser(userWithId);
         localStorage.setItem('userData', JSON.stringify(userWithId));
@@ -100,7 +91,6 @@ const fetchUpcomingSessions = async () => {
       userType: currentUser.type
     });
 
-    // Use the unified method from sessionService
     const sessions = await sessionService.getUpcomingSessionsForUser(
       currentUser.userId,
       currentUser.type
@@ -108,12 +98,10 @@ const fetchUpcomingSessions = async () => {
 
     console.log('Sessions from API:', sessions);
 
-    // Transform the data to match the frontend format
     const formattedSessions = await Promise.all(sessions.map(async (session) => {
       try {
         const { startTime, endTime } = sessionService.formatSessionTime(session);
 
-        // Format date display
         const sessionDate = new Date(
           session.sessionYear,
           session.sessionMonth - 1,
@@ -125,7 +113,6 @@ const fetchUpcomingSessions = async () => {
         const now = new Date();
         const isToday = sessionDate.toDateString() === now.toDateString();
         
-        // Create tomorrow's date correctly
         const tomorrow = new Date(now);
         tomorrow.setDate(now.getDate() + 1);
         const isTomorrow = sessionDate.toDateString() === tomorrow.toDateString();
@@ -143,7 +130,6 @@ const fetchUpcomingSessions = async () => {
           })} • ${startTime} - ${endTime}`;
         }
 
-        // Get subject details
         let subjectName = 'General';
         if (session.subjectId) {
           try {
@@ -154,7 +140,6 @@ const fetchUpcomingSessions = async () => {
           }
         }
 
-        // Determine other person's name (tutee for tutor, tutor for tutee)
         let otherPersonName = '';
         
         if (currentUser.type === 'TUTOR') {
@@ -198,7 +183,6 @@ const fetchUpcomingSessions = async () => {
           rawSession: session
         };
 
-        // Add specific fields for display compatibility
         if (currentUser.type === 'TUTEE') {
           sessionData.tutor = otherPersonName;
         } else if (currentUser.type === 'TUTOR') {
@@ -212,7 +196,6 @@ const fetchUpcomingSessions = async () => {
       }
     }));
 
-    // Filter out null sessions
     const validSessions = formattedSessions.filter(session => session !== null);
     
     setUpcomingSessions(validSessions);
@@ -220,7 +203,6 @@ const fetchUpcomingSessions = async () => {
   } catch (error) {
     console.error('Error fetching sessions:', error);
     
-    // Fallback to mock data if API fails (for development)
     const mockSessions = currentUser?.type === 'TUTOR' 
       ? [
           {
@@ -341,12 +323,13 @@ const fetchAvailableTutors = async () => {
       const tutorsWithSubjects = await Promise.all(
         allTutors.map(async (user) => {
           let tutorId = null;
+          let tutorRating = '5.0';
           let subjects = [];
           
           try {
             // Get tutor record using userId
             const tutorResponse = await tutorService.getTutorByUserId(user.userId);
-            
+            tutorRating = tutorResponse.averageRating;
             // If response is an object with tutorId, use it directly
             if (tutorResponse && tutorResponse.tutorId) {
               tutorId = tutorResponse.tutorId;
@@ -375,7 +358,7 @@ const fetchAvailableTutors = async () => {
             name: `${user.firstName} ${user.lastName}`,
             subject: primarySubject,
             allSubjects: subjects,
-            rating: '4.8',
+            rating: tutorRating,
             email: user.email,
             phone: user.phoneNumber,
             major: user.major,
@@ -395,34 +378,77 @@ const fetchAvailableTutors = async () => {
   }
 };
 
-  const fetchMessages = async () => {
-    try {
-      // TODO: Replace with actual messages API call
-      const mockMessages = [
-        {
-          id: 1,
-          sender: 'Alexander Binagatan',
-          senderId: 101,
-          preview: 'Hi! Just confirming our session for today at 2 PM.',
-          time: '10 min ago',
-          unread: true,
-          avatar: 'AB'
-        },
-        {
-          id: 2,
-          sender: 'Charry Mae Atamosa',
-          senderId: 102,
-          preview: 'I\'ve uploaded the study materials for our next physics session.',
-          time: '1 hour ago',
-          unread: true,
-          avatar: 'CA'
+const fetchMessages = async () => {
+  try {
+    if (!currentUser?.userId) return;
+
+    const response = await messageAPI.getUserConversations(currentUser.userId);
+    
+    if (response && Array.isArray(response)) {
+      const formattedMessages = response.map(conversation => {
+        // Get the other participant (not the current user)
+        const participant = conversation.participant || {};
+        
+        // Format time
+        const lastMessageTime = conversation.lastMessage?.timestamp;
+        let timeDisplay = 'No messages';
+        if (lastMessageTime) {
+          const timeDiff = Math.floor((new Date() - new Date(lastMessageTime)) / (1000 * 60));
+          
+          if (timeDiff < 1) timeDisplay = 'Just now';
+          else if (timeDiff < 60) timeDisplay = `${timeDiff}m ago`;
+          else if (timeDiff < 1440) timeDisplay = `${Math.floor(timeDiff / 60)}h ago`;
+          else timeDisplay = `${Math.floor(timeDiff / 1440)}d ago`;
         }
-      ];
-      setMessages(mockMessages);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
+
+        return {
+          id: conversation.conversationId,
+          sender: participant.name || 'Unknown User',
+          senderId: participant.userId,
+          preview: conversation.lastMessage?.text?.substring(0, 50) + '...' || 'Start a conversation',
+          time: timeDisplay,
+          unread: conversation.unreadCount > 0,
+          avatar: participant.avatar || 
+            (participant.name ? getAvatarInitials(participant.name) : 'U')
+        };
+      });
+
+      // Sort by unread first, then by timestamp
+      const sortedMessages = formattedMessages.sort((a, b) => {
+        if (a.unread && !b.unread) return -1;
+        if (!a.unread && b.unread) return 1;
+        return 0;
+      });
+
+      setMessages(sortedMessages);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    
+    // Fallback to mock data
+    const mockMessages = [
+      {
+        id: 1,
+        sender: 'Alexander Binagatan',
+        senderId: 101,
+        preview: 'Hi! Just confirming our session for today at 2 PM.',
+        time: '10 min ago',
+        unread: true,
+        avatar: 'AB'
+      },
+      {
+        id: 2,
+        sender: 'Charry Mae Atamosa',
+        senderId: 102,
+        preview: 'I\'ve uploaded the study materials for our next physics session.',
+        time: '1 hour ago',
+        unread: true,
+        avatar: 'CA'
+      }
+    ];
+    setMessages(mockMessages);
+  }
+};
 
   const handleBookSession = (tutorId = null) => {
     if (tutorId) {
@@ -437,10 +463,17 @@ const fetchAvailableTutors = async () => {
   };
 
   const handleMessageClick = (message) => {
-    alert(`Opening conversation with ${message.sender}`);
+    // Use state instead of URL parameters
+    navigate('/messages', { 
+      state: { 
+        selectedConversationId: message.id,
+        senderName: message.sender
+      } 
+    });
   };
 
   const handleViewAllMessages = () => {
+    // Simple navigation without URL parameters
     navigate('/messages');
   };
 
@@ -476,11 +509,6 @@ const fetchAvailableTutors = async () => {
         )}
 
         <WelcomeBanner currentUser={currentUser} />
-        
-        {currentUser?.type === 'Tutor' && (
-          <TutorProfileCard currentUser={currentUser} />
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Sessions

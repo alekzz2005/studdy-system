@@ -1,6 +1,6 @@
 package com.appdevg5.cjainnovators.service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -37,7 +37,7 @@ public class NotificationService {
                 .title(requestDTO.getTitle())
                 .message(requestDTO.getMessage())
                 .isRead(false)
-                .dateCreated(LocalDate.now())
+                .dateCreated(LocalDateTime.now())
                 .build();
         
         // Save to database

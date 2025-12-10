@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../../services/auth';
 import '../styles/LandingPage.css';
 
-import Header from '../landing/HeaderSection';
+import Header from './HeaderSection';
 
-import HeroSection from '../landing/HeroSection';
-import FeaturesSection from '../landing/FeaturesSection';
-import HowItWorksSection from '../landing/HowItWorksSection';
-import SubjectsSection from '../landing/SubjectsSection';
-import CTASection from '../landing/CTASection';
+import HeroSection from './HeroSection';
+import FeaturesSection from './FeaturesSection';
+import HowItWorksSection from './HowItWorksSection';
+import SubjectsSection from './SubjectsSection';
+import CTASection from './CTASection';
 
-import Footer from '../landing/FooterSection';
+import Footer from './FooterSection';
 
 const LandingPage = () => {
   const [stats, setStats] = useState({
@@ -160,10 +161,12 @@ const LandingPage = () => {
   };
 
   const handleSignIn = () => {
+    authAPI.logout();
     navigate('/login');
   };
 
   const handleGetStarted = () => {
+    authAPI.logout();
     navigate('/register');
   };
 

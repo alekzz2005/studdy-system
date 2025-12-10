@@ -1,12 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './components/pages/LandingPage';
+import LandingPage from './components/landing/LandingPage';
 import LoginPage from './components/auth/Login';
 import RegisterPage from './components/auth/Register';
 import Dashboard from './components/dashboard/Dashboard';
 import BookTutor from './components/booktutor/BookTutor';
 import Profile from './components/profile/Profile'; 
-import MessagesPage from './components/pages/MessagesPage';
+import MessagesPage from './components/messages/MessagesPage';
 
 import './styles/index.css';
 

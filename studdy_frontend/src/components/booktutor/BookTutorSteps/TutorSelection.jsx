@@ -74,14 +74,6 @@ const TutorSelection = ({ formData, onChange, errors, tutors }) => {
                   <p className="tutor-expertise">
                     Expertise: {getExpertiseDisplay(tutor)}
                   </p>
-                  <div className="tutor-status">
-                    <span className={`status-badge ${tutor.available ? 'available' : 'unavailable'}`}>
-                      {tutor.available ? 'Available' : 'Unavailable'}
-                    </span>
-                    <span className={`status-badge ${tutor.isActive ? 'active' : 'inactive'}`}>
-                      {tutor.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
                 </div>
               </div>
             ))
