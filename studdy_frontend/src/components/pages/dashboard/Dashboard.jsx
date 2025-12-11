@@ -426,10 +426,12 @@ const fetchMessages = async () => {
   };
 
   const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      authAPI.logout();
-      navigate('/login');
-    }
+    // if (window.confirm("Are you sure you want to logout?")) {
+    //   authAPI.logout();
+    //   navigate('/login');
+    // }
+    authAPI.logout();
+    navigate('/login');
   };
 
   if (loading) {

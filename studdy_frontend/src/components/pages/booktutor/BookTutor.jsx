@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, CheckCircle } from 'lucide-react';
 import Button from '../../common/Button';
 import StepIndicator from '../../common/StepIndicator';
 import SubjectSelection from './BookTutorSteps/SubjectSelection';
@@ -37,6 +37,7 @@ const BookTutor = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isLoadingTutors, setIsLoadingTutors] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // Add success modal state
   const navigate = useNavigate();
 
   const bookTutorSteps = [{ number: 1 }, { number: 2 }, { number: 3 }];
@@ -263,6 +264,12 @@ const BookTutor = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Handle modal close and redirect to dashboard
+  const handleModalClose = () => {
+    setShowSuccessModal(false);
+    navigate('/dashboard');
+  };
+
   const handleSubmit = async () => {
     if (step < 3) {
       if (validateStep(step)) setStep(step + 1);
@@ -299,8 +306,8 @@ const BookTutor = () => {
           };
 
           await sessionService.createSession(sessionData);
-          alert('Session booked successfully! Status: Pending. You\'ll receive a confirmation email.');
-          navigate('/dashboard');
+          // Show success modal instead of alert
+          setShowSuccessModal(true);
         } catch (error) {
           setErrors({ submit: error.message || 'Booking failed. Please try again.' });
         } finally {
@@ -346,86 +353,132 @@ const BookTutor = () => {
   }
 
   return (
-    <div className="book-tutor-container">
-      <div className="book-tutor-card">
-        <div className="book-tutor-header">
-          <div className="book-tutor-icon">
-            <GraduationCap className="text-white" size={32} />
-          </div>
-          <h1 className="book-tutor-title">Book a Tutoring Session</h1>
-          <p className="book-tutor-subtitle">Find the perfect tutor and schedule your learning session</p>
-        </div>
-        
-        <StepIndicator currentStep={step} steps={bookTutorSteps} />
-
-        <div className="booking-content">
-          {step === 1 && (
-            <SubjectSelection
-              formData={formData}
-              onChange={handleChange}
-              errors={errors}
-              subjects={subjects}
-            />
-          )}
-
-          {step === 2 && (
-            <LearningGoalsStep formData={formData} errors={errors} onChange={handleChange} />
-          )}
-
-          {step === 3 && (
-            <>
-              <div className="step-content">
-                <h3 className="step-title">Schedule Session</h3>
-                <p className="step-description">Choose your preferred date and time</p>
-                <DateTimePicker formData={formData} errors={errors} onChange={handleChange} />
-              </div>
-
-              <div className="tutor-selection-section">
-                <TutorSelection
-                  formData={formData}
-                  onChange={handleChange}
-                  errors={errors}
-                  tutors={getTutorsForSubject()}
-                  isLoading={isLoadingTutors}
-                />
-              </div>
-
-              <SessionSummary 
-                formData={formData} 
-                selectedTutor={getSelectedTutor()}
-              />
-            </>
-          )}
-
-          {errors.submit && (
-            <div className="error-banner">
-              <p className="error-message">{errors.submit}</p>
+    <>
+      <div className="book-tutor-container">
+        <div className="book-tutor-card">
+          <div className="book-tutor-header">
+            <div className="book-tutor-icon">
+              <GraduationCap className="text-white" size={32} />
             </div>
-          )}
+            <h1 className="book-tutor-title">Book a Tutoring Session</h1>
+            <p className="book-tutor-subtitle">Find the perfect tutor and schedule your learning session</p>
+          </div>
+          
+          <StepIndicator currentStep={step} steps={bookTutorSteps} />
 
-          <div className="button-group">
-            <Button 
-              variant="secondary" 
-              onClick={handleBack} 
-              fullWidth={true}
-              disabled={isLoading}
-            >
-              {step === 1 ? 'Back to Dashboard' : 'Back'}
-            </Button>
-            
-            <Button 
-              onClick={handleSubmit} 
-              variant="primary" 
-              fullWidth={true}
-              disabled={isLoading}
-              loading={isLoading}
-            >
-              {step === 3 ? 'Confirm Booking' : 'Next'}
-            </Button>
+          <div className="booking-content">
+            {step === 1 && (
+              <SubjectSelection
+                formData={formData}
+                onChange={handleChange}
+                errors={errors}
+                subjects={subjects}
+              />
+            )}
+
+            {step === 2 && (
+              <LearningGoalsStep formData={formData} errors={errors} onChange={handleChange} />
+            )}
+
+            {step === 3 && (
+              <>
+                <div className="step-content">
+                  <h3 className="step-title">Schedule Session</h3>
+                  <p className="step-description">Choose your preferred date and time</p>
+                  <DateTimePicker formData={formData} errors={errors} onChange={handleChange} />
+                </div>
+
+                <div className="tutor-selection-section">
+                  <TutorSelection
+                    formData={formData}
+                    onChange={handleChange}
+                    errors={errors}
+                    tutors={getTutorsForSubject()}
+                    isLoading={isLoadingTutors}
+                  />
+                </div>
+
+                <SessionSummary 
+                  formData={formData} 
+                  selectedTutor={getSelectedTutor()}
+                />
+              </>
+            )}
+
+            {errors.submit && (
+              <div className="error-banner">
+                <p className="error-message">{errors.submit}</p>
+              </div>
+            )}
+
+            <div className="button-group">
+              <Button 
+                variant="secondary" 
+                onClick={handleBack} 
+                fullWidth={true}
+                disabled={isLoading}
+              >
+                {step === 1 ? 'Back to Dashboard' : 'Back'}
+              </Button>
+              
+              <Button 
+                onClick={handleSubmit} 
+                variant="primary" 
+                fullWidth={true}
+                disabled={isLoading}
+                loading={isLoading}
+              >
+                {step === 3 ? 'Confirm Booking' : 'Next'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Booking Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            {/* Modal Header */}
+            <div className="p-6 text-center">
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Booking Successful!</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Your tutoring session has been booked successfully.
+                </p>
+              </div>
+            </div>
+            
+            {/* Modal Body - Add session details if available */}
+            <div className="p-6 border-t border-gray-100">
+              <div className="text-center">
+                <p className="text-gray-700 mb-2">
+                  Status: <span className="font-semibold text-amber-600">Pending</span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  You'll receive a notification once the tutor accepts your request.
+                </p>
+              </div>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+              <div className="flex justify-center">
+                <button
+                  onClick={handleModalClose}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  Back to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

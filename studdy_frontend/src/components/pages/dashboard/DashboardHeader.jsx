@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, CalendarPlus, ChevronDown, Check, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { Bell, CalendarPlus, ChevronDown, Check, Clock, AlertCircle, Loader2, LogOut } from 'lucide-react';
 import ProfileDropdown from './ProfileDropdown';
 import { Link } from 'react-router-dom';
 
-import { notificationAPI } from '../../../services/notification'; // Import the notification API
+import { notificationAPI } from '../../../services/notification';
 
 const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -12,6 +12,7 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [loadingUnreadCount, setLoadingUnreadCount] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const notificationsRef = useRef(null);
 
   const getInitials = (firstName, lastName) => {
@@ -75,6 +76,7 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
     }
   };
 
+  // Handle click outside for notifications dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
@@ -85,6 +87,21 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Handle logout confirmation
+  const handleLogoutClick = () => {
+    setProfileDropdownOpen(false);
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutModal(false);
+    onLogout();
+  };
+
+  const handleCancelLogout = () => {
+    setShowLogoutModal(false);
+  };
 
   const handleNotificationClick = async (notificationId) => {
     try {
@@ -194,169 +211,233 @@ const DashboardHeader = ({ currentUser, onBookSession, onLogout }) => {
   const hasUnreadNotifications = notifications.some(n => !n.isRead);
 
   return (
-    <header className="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <Link to="/dashboard">
-              <h1 className="text-3xl font-bold text-green-600 leading-none pt-5">Studdy</h1>
-            </Link>
-          </div>
-          
-          <div className="flex items-center space-x-6">
-            {isTutee && (
-            <button 
-              onClick={() => onBookSession()}
-              className="hidden sm:flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap"
-            >
-              <CalendarPlus className="w-5 h-5" />
-              <span>Book Session</span>
-            </button>)}
+    <>
+      <header className="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link to="/dashboard">
+                <h1 className="text-3xl font-bold text-green-600 leading-none pt-5">Studdy</h1>
+              </Link>
+            </div>
             
-            {/* Notifications Dropdown */}
-            <div className="relative" ref={notificationsRef}>
+            <div className="flex items-center space-x-6">
+              {isTutee && (
               <button 
-                onClick={() => setNotificationsDropdownOpen(!notificationsDropdownOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 relative transition-colors"
-                disabled={loadingUnreadCount}
+                onClick={() => onBookSession()}
+                className="hidden sm:flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap"
               >
-                <Bell className="w-6 h-6 text-gray-600" />
-                {loadingUnreadCount ? (
-                  <span className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center">
-                    <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />
-                  </span>
-                ) : unreadCount > 0 ? (
-                  <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                ) : null}
-              </button>
+                <CalendarPlus className="w-5 h-5" />
+                <span>Book Session</span>
+              </button>)}
               
-              {/* Notifications Dropdown Content */}
-              {notificationsDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                  <div className="p-4 border-b border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-semibold text-gray-900">Notifications</h3>
-                      <div className="flex-1 text-right">
-                        {hasUnreadNotifications && (
-                          <button
-                            onClick={markAllAsRead}
-                            className="text-sm text-green-600 hover:text-green-800 font-medium disabled:opacity-50"
-                            disabled={loadingNotifications}
-                          >
-                            {loadingNotifications ? 'Processing...' : 'Mark all as read'}
-                          </button>
-                        )}
+              {/* Notifications Dropdown */}
+              <div className="relative" ref={notificationsRef}>
+                <button 
+                  onClick={() => setNotificationsDropdownOpen(!notificationsDropdownOpen)}
+                  className="p-2 rounded-lg hover:bg-gray-100 relative transition-colors"
+                  disabled={loadingUnreadCount}
+                >
+                  <Bell className="w-6 h-6 text-gray-600" />
+                  {loadingUnreadCount ? (
+                    <span className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center">
+                      <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />
+                    </span>
+                  ) : unreadCount > 0 ? (
+                    <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  ) : null}
+                </button>
+                
+                {/* Notifications Dropdown Content */}
+                {notificationsDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <div className="p-4 border-b border-gray-200">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-gray-900">Notifications</h3>
+                        <div className="flex-1 text-right">
+                          {hasUnreadNotifications && (
+                            <button
+                              onClick={markAllAsRead}
+                              className="text-sm text-green-600 hover:text-green-800 font-medium disabled:opacity-50"
+                              disabled={loadingNotifications}
+                            >
+                              {loadingNotifications ? 'Processing...' : 'Mark all as read'}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="max-h-96 overflow-y-auto">
-                    {loadingNotifications ? (
-                      <div className="p-8 text-center">
-                        <Loader2 className="w-6 h-6 text-gray-400 animate-spin mx-auto" />
-                        <p className="text-sm text-gray-500 mt-2">Loading notifications...</p>
-                      </div>
-                    ) : notifications.length === 0 ? (
-                      <div className="p-6 text-center">
-                        <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                        <p className="text-sm text-gray-500">No notifications</p>
-                        <p className="text-xs text-gray-400 mt-1">Notifications will appear here</p>
-                      </div>
-                    ) : (
-                      <div className="divide-y divide-gray-100">
-                        {notifications.map((notification) => (
-                          <div
-                            key={notification.notificationId}
-                            className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                              !notification.isRead ? 'bg-blue-50/50' : ''
-                            }`}
-                            onClick={() => handleNotificationClick(notification.notificationId)}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-start space-x-3">
-                                <div className="mt-0.5">
-                                  {getNotificationIcon(notification.notificationType)}
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-2">
-                                      <h4 className={`text-sm ${notification.isRead ? 'font-normal text-gray-900' : 'font-semibold text-gray-900'}`}>
-                                        {notification.title}
-                                      </h4>
-                                      {!notification.isRead && (
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                      )}
-                                    </div>
+                    
+                    <div className="max-h-96 overflow-y-auto">
+                      {loadingNotifications ? (
+                        <div className="p-8 text-center">
+                          <Loader2 className="w-6 h-6 text-gray-400 animate-spin mx-auto" />
+                          <p className="text-sm text-gray-500 mt-2">Loading notifications...</p>
+                        </div>
+                      ) : notifications.length === 0 ? (
+                        <div className="p-6 text-center">
+                          <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                          <p className="text-sm text-gray-500">No notifications</p>
+                          <p className="text-xs text-gray-400 mt-1">Notifications will appear here</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-gray-100">
+                          {notifications.map((notification) => (
+                            <div
+                              key={notification.notificationId}
+                              className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                                !notification.isRead ? 'bg-blue-50/50' : ''
+                              }`}
+                              onClick={() => handleNotificationClick(notification.notificationId)}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-start space-x-3">
+                                  <div className="mt-0.5">
+                                    {getNotificationIcon(notification.notificationType)}
                                   </div>
-                                  <p className={`text-sm mt-1 ${notification.isRead ? 'text-gray-600' : 'text-gray-700'}`}>
-                                    {notification.message}
-                                  </p>
-                                  <div className="flex items-center justify-between mt-2">
-                                    <span className="text-xs text-gray-500">
-                                      {formatTimeAgo(notification.dateCreated)}
-                                    </span>
-                                    <div className="flex items-center space-x-2">
-                                      {notification.userName && (
-                                        <span className="text-xs text-gray-500">
-                                          {notification.userName}
-                                        </span>
-                                      )}
+                                  <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-2">
+                                        <h4 className={`text-sm ${notification.isRead ? 'font-normal text-gray-900' : 'font-semibold text-gray-900'}`}>
+                                          {notification.title}
+                                        </h4>
+                                        {!notification.isRead && (
+                                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <p className={`text-sm mt-1 ${notification.isRead ? 'text-gray-600' : 'text-gray-700'}`}>
+                                      {notification.message}
+                                    </p>
+                                    <div className="flex items-center justify-between mt-2">
+                                      <span className="text-xs text-gray-500">
+                                        {formatTimeAgo(notification.dateCreated)}
+                                      </span>
+                                      <div className="flex items-center space-x-2">
+                                        {notification.userName && (
+                                          <span className="text-xs text-gray-500">
+                                            {notification.userName}
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-3 border-t border-gray-200">
-                    <button
-                      onClick={fetchNotifications}
-                      className="w-full text-center text-sm text-gray-600 hover:text-gray-800 font-medium py-1"
-                      disabled={loadingNotifications}
-                    >
-                      {loadingNotifications ? (
-                        <span className="flex items-center justify-center">
-                          <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                          Refreshing...
-                        </span>
-                      ) : (
-                        'Refresh notifications'
+                          ))}
+                        </div>
                       )}
-                    </button>
+                    </div>
+                    
+                    <div className="p-3 border-t border-gray-200">
+                      <button
+                        onClick={fetchNotifications}
+                        className="w-full text-center text-sm text-gray-600 hover:text-gray-800 font-medium py-1"
+                        disabled={loadingNotifications}
+                      >
+                        {loadingNotifications ? (
+                          <span className="flex items-center justify-center">
+                            <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                            Refreshing...
+                          </span>
+                        ) : (
+                          'Refresh notifications'
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Profile Dropdown */}
-            <div className="relative">
-              <button 
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-1 transition-colors"
-              >
-                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                  {currentUser ? getInitials(currentUser.firstName, currentUser.lastName) : 'U'}
-                </div>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              </button>
+                )}
+              </div>
               
-              <ProfileDropdown
-                isOpen={profileDropdownOpen}
-                onClose={() => setProfileDropdownOpen(false)}
-                currentUser={currentUser}
-                onLogout={onLogout}
-              />
+              {/* Profile Dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-1 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    {currentUser ? getInitials(currentUser.firstName, currentUser.lastName) : 'U'}
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+                
+                <ProfileDropdown
+                  isOpen={profileDropdownOpen}
+                  onClose={() => setProfileDropdownOpen(false)}
+                  currentUser={currentUser}
+                  onLogout={handleLogoutClick} // Updated to use modal handler
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md animate-scaleIn">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <LogOut className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Log Out</h3>
+                  <p className="text-sm text-gray-500">Confirm your action</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6">
+              <p className="text-gray-700">
+                Are you sure you want to log out of your account? You'll need to sign in again to access your dashboard.
+              </p>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={handleCancelLogout}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmLogout}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add CSS for animation */}
+      <style jsx>{`
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.2s ease-out;
+        }
+      `}</style>
+    </>
   );
 };
 

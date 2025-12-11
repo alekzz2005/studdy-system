@@ -163,10 +163,10 @@ const Sessions = ({ sessions, loading, onRefresh, onBookSession, userType, curre
               return (
                 <div 
                   key={sessionId} 
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50"
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50 relative min-h-[140px]" // Added min-height for better layout
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0"> {/* Added min-w-0 for text truncation */}
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1 min-w-0 pr-12"> {/* Increased right padding for status badge */}
                       <div className="flex items-center space-x-2 mb-2">
                         <BookOpen className="w-5 h-5 text-green-600 flex-shrink-0" />
                         <h4 className="font-semibold text-gray-900 truncate">
@@ -185,8 +185,9 @@ const Sessions = ({ sessions, loading, onRefresh, onBookSession, userType, curre
                       </div>
                     </div>
                     
-                    <div className="flex flex-col items-end space-y-2 ml-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                    {/* Status badge - top-right */}
+                    <div className="absolute top-4 right-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                         session.status === 'Confirmed' || session.status === 'confirmed'
                           ? 'bg-green-100 text-green-700' 
                           : session.status === 'Pending' || session.status === 'pending'
@@ -201,88 +202,94 @@ const Sessions = ({ sessions, loading, onRefresh, onBookSession, userType, curre
                       }`}>
                         {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
                       </span>
-                      
-                      {/* Tutor Actions */}
-                      {userType === 'TUTOR' && (
-                        <div className="flex space-x-2">
-                          {/* Accept/Decline buttons for pending sessions */}
-                          {canTutorRespond(session) && (
-                            <>
-                              <button 
-                                onClick={() => handleAccept(sessionId)}
-                                disabled={processingSession === sessionId}
-                                className="flex items-center space-x-1 px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                              >
-                                {isProcessing(sessionId, 'accept') ? (
-                                  <RefreshCw className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <>
-                                    <CheckCircle className="w-4 h-4" />
-                                    <span>Accept</span>
-                                  </>
-                                )}
-                              </button>
-                              <button 
-                                onClick={() => handleDecline(sessionId)}
-                                disabled={processingSession === sessionId}
-                                className="flex items-center space-x-1 px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                              >
-                                {isProcessing(sessionId, 'decline') ? (
-                                  <RefreshCw className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <>
-                                    <XCircle className="w-4 h-4" />
-                                    <span>Decline</span>
-                                  </>
-                                )}
-                              </button>
-                            </>
-                          )}
-                          
-                          {/* Cancel button for confirmed sessions */}
-                          {canTutorCancel(session) && (
-                            <button 
-                              onClick={() => handleCancel(sessionId)}
-                              disabled={processingSession === sessionId}
-                              className="flex items-center space-x-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                            >
-                              {isProcessing(sessionId, 'cancel') ? (
-                                <RefreshCw className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <>
-                                  <Ban className="w-4 h-4" />
-                                  <span>Cancel</span>
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      )}
-                      
-                      {/* NEW: Tutee Actions */}
-                      {userType === 'TUTEE' && (
-                        <div className="flex space-x-2">
-                          {/* Cancel button for pending sessions */}
-                          {canTuteeCancel(session) && (
-                            <button 
-                              onClick={() => handleCancel(sessionId)}
-                              disabled={processingSession === sessionId}
-                              className="flex items-center space-x-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                            >
-                              {isProcessing(sessionId, 'cancel') ? (
-                                <RefreshCw className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <>
-                                  <Ban className="w-4 h-4" />
-                                  <span>Cancel</span>
-                                </>
-                              )}
-                            </button>
-                          )}
-
-                        </div>
-                      )}
                     </div>
+                  </div>
+                  
+                  {/* Action buttons - positioned at bottom-right corner */}
+                  <div className="absolute bottom-3 right-3 flex space-x-1">
+                    {/* Tutor Actions */}
+                    {userType === 'TUTOR' && (
+                      <>
+                        {/* Accept/Decline buttons for pending sessions */}
+                        {canTutorRespond(session) && (
+                          <>
+                            <button 
+                              onClick={() => handleAccept(sessionId)}
+                              disabled={processingSession === sessionId}
+                              className="flex items-center space-x-1 px-2 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[70px] justify-center"
+                              title="Accept session"
+                            >
+                              {isProcessing(sessionId, 'accept') ? (
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <>
+                                  <CheckCircle className="w-3 h-3" />
+                                  <span>Accept</span>
+                                </>
+                              )}
+                            </button>
+                            <button 
+                              onClick={() => handleDecline(sessionId)}
+                              disabled={processingSession === sessionId}
+                              className="flex items-center space-x-1 px-2 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[70px] justify-center"
+                              title="Decline session"
+                            >
+                              {isProcessing(sessionId, 'decline') ? (
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <>
+                                  <XCircle className="w-3 h-3" />
+                                  <span>Decline</span>
+                                </>
+                              )}
+                            </button>
+                          </>
+                        )}
+                        
+                        {/* Cancel button for confirmed sessions */}
+                        {canTutorCancel(session) && (
+                          <button 
+                            onClick={() => handleCancel(sessionId)}
+                            disabled={processingSession === sessionId}
+                            className="flex items-center space-x-1 px-2 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[70px] justify-center"
+                            title="Cancel session"
+                          >
+                            {isProcessing(sessionId, 'cancel') ? (
+                              <RefreshCw className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <>
+                                <Ban className="w-3 h-3" />
+                                <span>Cancel</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </>
+                    )}
+                    
+                    {/* NEW: Tutee Actions */}
+                    {userType === 'TUTEE' && (
+                      <>
+                        {/* Cancel button for pending sessions */}
+                        {canTuteeCancel(session) && (
+                          <button 
+                            onClick={() => handleCancel(sessionId)}
+                            disabled={processingSession === sessionId}
+                            className="flex items-center space-x-1 px-2 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[70px] justify-center"
+                            title="Cancel session"
+                          >
+                            {isProcessing(sessionId, 'cancel') ? (
+                              <RefreshCw className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <>
+                                <Ban className="w-3 h-3" />
+                                <span>Cancel</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               );

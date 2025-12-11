@@ -1,7 +1,7 @@
 // components/auth/Register.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, CheckCircle } from 'lucide-react';
 import AuthLayout from '../../layout/AuthLayout';
 import Button from '../../common/Button';
 import StepIndicator from '../../common/StepIndicator';
@@ -39,6 +39,8 @@ const RegisterPage = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [registrationType, setRegistrationType] = useState(''); // 'tutor' or 'tutee'
   const navigate = useNavigate();
 
   const registerSteps = [
@@ -76,11 +78,11 @@ const RegisterPage = () => {
         const birthDate = new Date(formData.dateOfBirth);
         const today = new Date();
 
-              // Prevent future dates
+        // Prevent future dates
         if (birthDate > today) {
           newErrors.dateOfBirth = 'Date of birth cannot be in the future';
         } else {
-        // Calculate age
+          // Calculate age
           const age = today.getFullYear() - birthDate.getFullYear();
           const monthDiff = today.getMonth() - birthDate.getMonth();
           
@@ -120,14 +122,24 @@ const RegisterPage = () => {
   // Function to fetch tutorId by userId
   const fetchTutorIdByUserId = async (userId) => {
     try {
-      // You'll need to create this endpoint in your backend
-      // Or you can get tutor info by userId
       const response = await tutorService.getTutorByUserId(userId);
       return response.tutorId;
     } catch (error) {
       console.error('Error fetching tutorId:', error);
       return null;
     }
+  };
+
+  // Show success modal
+  const showRegistrationSuccessModal = (type) => {
+    setRegistrationType(type);
+    setShowSuccessModal(true);
+  };
+
+  // Handle modal close and redirect to login
+  const handleModalClose = () => {
+    setShowSuccessModal(false);
+    navigate('/login');
   };
 
   const handleSubmit = async () => {
@@ -233,10 +245,9 @@ const RegisterPage = () => {
               setLoadingSubjects(false);
             }
           } else {
-            console.log('User is tutee, redirecting to login');
-            // If user is tutee, registration is complete
-            alert('Registration complete! You can now log in.');
-            navigate('/login');
+            console.log('User is tutee, showing success modal');
+            // If user is tutee, registration is complete - show success modal
+            showRegistrationSuccessModal('tutee');
           }
         } catch (error) {
           console.error('Registration error:', error);
@@ -289,10 +300,9 @@ const RegisterPage = () => {
           await Promise.all(tutorSubjectPromises);
           console.log('Tutor subjects added successfully');
 
-          // Clear temporary data and redirect to login
+          // Clear temporary data and show success modal
           localStorage.removeItem('tempUserData');
-          alert('Registration complete! You can now log in as a tutor.');
-          navigate('/login');
+          showRegistrationSuccessModal('tutor');
 
         } catch (error) {
           console.error('Error creating tutor subjects:', error);
@@ -343,70 +353,123 @@ const RegisterPage = () => {
   };
 
   return (
-    <AuthLayout 
-      title="Join Studdy" 
-      subtitle="Start your peer learning journey"
-      icon={GraduationCap}
-      size="lg"
-    >
-      
-      <StepIndicator 
-        currentStep={step} 
-        steps={formData.type === 'tutor' ? registerSteps : registerSteps.slice(0, 3)} 
-      />
+    <>
+      <AuthLayout 
+        title="Join Studdy" 
+        subtitle="Start your peer learning journey"
+        icon={GraduationCap}
+        size="lg"
+      >
+        
+        <StepIndicator 
+          currentStep={step} 
+          steps={formData.type === 'tutor' ? registerSteps : registerSteps.slice(0, 3)} 
+        />
 
-      <div>
-        {getCurrentStepComponent()}
+        <div>
+          {getCurrentStepComponent()}
 
-        {errors.submit && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
-            <p className="text-sm text-red-800">{errors.submit}</p>
+          {errors.submit && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
+              <p className="text-sm text-red-800">{errors.submit}</p>
+            </div>
+          )}
+
+          <div className="flex gap-4 mt-8">
+            {step > 1 ? (
+              <Button variant="secondary" onClick={handleBack} fullWidth={true}>
+                Back
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={handleSwitchToLogin} fullWidth={true}>
+                Back to Login
+              </Button>
+            )}
+            
+            <Button 
+              onClick={() => {
+                console.log('Button clicked at step', step);
+                handleSubmit();
+              }} 
+              variant="primary" 
+              fullWidth={true}
+              disabled={isLoading}
+              loading={isLoading}
+            >
+              {isLoading ? 'Processing...' : 
+                step === 4 ? 'Complete Tutor Registration' : 
+                step === 3 ? formData.type === 'tutor' ? 'Next: Add Subjects' : 'Complete Registration' : 
+                'Next'}
+            </Button>
+          </div>
+        </div>
+
+        {step === 1 && (
+          <div className="text-center mt-6">
+            <p className="text-gray-600">
+              Already have an account?{' '}
+              <button
+                onClick={handleSwitchToLogin}
+                className="text-green-600 hover:text-green-700 font-semibold"
+              >
+                Sign In
+              </button>
+            </p>
           </div>
         )}
+      </AuthLayout>
 
-        <div className="flex gap-4 mt-8">
-          {step > 1 ? (
-            <Button variant="secondary" onClick={handleBack} fullWidth={true}>
-              Back
-            </Button>
-          ) : (
-            <Button variant="outline" onClick={handleSwitchToLogin} fullWidth={true}>
-              Back to Login
-            </Button>
-          )}
-          
-          <Button 
-            onClick={() => {
-              console.log('Button clicked at step', step);
-              handleSubmit();
-            }} 
-            variant="primary" 
-            fullWidth={true}
-            disabled={isLoading}
-            loading={isLoading}
-          >
-            {isLoading ? 'Processing...' : 
-              step === 4 ? 'Complete Tutor Registration' : 
-              step === 3 ? formData.type === 'tutor' ? 'Next: Add Subjects' : 'Complete Registration' : 
-              'Next'}
-          </Button>
-        </div>
-      </div>
-
-      {step === 1 && (
-        <div className="text-center mt-6">
-          <p className="text-gray-600">
-            Already have an account?{' '}
-            <button
-              onClick={handleSwitchToLogin}
-              className="text-green-600 hover:text-green-700 font-semibold"
-            >
-              Sign In
-            </button>
-          </p>
+      {/* Registration Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            {/* Modal Header */}
+            <div className="p-6 text-center">
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Registration Complete!</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  {registrationType === 'tutor' 
+                    ? 'Your tutor account has been created.' 
+                    : 'Your tutee account has been created.'}
+                </p>
+              </div>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+              <div className="flex justify-center">
+                <button
+                  onClick={handleModalClose}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  Continue to Login
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
-    </AuthLayout>
+
+      {/* Add CSS for animation */}
+      <style jsx>{`
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.2s ease-out;
+        }
+      `}</style>
+    </>
   );
 };
 
